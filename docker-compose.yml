@@ -1,0 +1,41 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: inventory_api
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: 8080
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=InventoryAPI;User Id=sa;Password=YourStrong!Password123;TrustServerCertificate=True;"
+    depends_on:
+      sqlserver:
+        condition: service_started
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: inventory_sql
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "YourStrong!Password123"
+    ports:
+      - "127.0.0.1:1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+
+  dbInit:
+    image: mcr.microsoft.com/mssql-tools
+    depends_on:
+      - sqlserver
+    volumes:
+      - ./database/init.sql:/init.sql
+    entrypoint: >
+      /bin/bash -c "
+      sleep 20 &&
+      /opt/mssql-tools/bin/sqlcmd -S sqlserver -U sa -P YourStrong!Password123 -i /init.sql
+      "
+
+volumes:
+  sql_data:
