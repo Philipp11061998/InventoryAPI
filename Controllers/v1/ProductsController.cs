@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using InventoryAPI.Models;
+using InventoryAPI.Services;
 
 namespace InventoryAPI.Controllers;
 
@@ -7,9 +7,12 @@ namespace InventoryAPI.Controllers;
 [Route("api/[controller]")]
 public partial class ProductsController : ControllerBase
 {
-    public ProductRepository _repo;
-    public ProductsController(ProductRepository productRepository)
+    private readonly ProductService _productService;
+
+    public ProductsController(ProductService productService)
     {
-        _repo = productRepository;
+        _productService = productService;
     }
+
+    
 }
