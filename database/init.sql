@@ -18,6 +18,10 @@ DROP TABLE IF EXISTS dbo.warehouses
 
 GO
 
+DROP TABLE IF EXISTS dbo.movements
+
+GO
+
 CREATE TABLE dbo.products (
     Id INT IDENTITY(1,1) PRIMARY KEY,
     sku NVARCHAR(20) NOT NULL,
@@ -35,7 +39,27 @@ CREATE TABLE dbo.warehouses (
     [Description] NVARCHAR(100) NOT NULL,
     is_active BIT NOT NULL DEFAULT 1,
     created_at DATETIME2 NOT NULL DEFAULT GETDATE()
+);
 
+GO
+
+CREATE TABLE dbo.movements (
+    Id INT IDENTITY(1,1) PRIMARY KEY, 
+    ProductId INT NOT NULL,
+    WarehouseId INT NOT NULL,
+    Amount INT NOT NULL,
+    MovementType INT NOT NULL,
+    TransferReference NVARCHAR(100) NULL,
+    Note NVARCHAR(100) NULL,
+    created_at DATETIME2 NOT NULL DEFAULT GETDATE(),
+    CONSTRAINT FK_movements_productId FOREIGN KEY(ProductId)
+        REFERENCES dbo.products(Id)
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT FK_movements_warehouseId FOREIGN KEY(WarehouseId)
+        REFERENCES dbo.warehouses(Id)
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
 );
 
 GO
@@ -61,5 +85,28 @@ BEGIN
     ('Munich Cold Storage', 'Temperature-controlled warehouse for beverages and perishables'),
     ('Hamburg Port Warehouse', 'Imports and exports via Hamburg harbor'),
     ('Overflow Storage NRW', 'Used during peak demand seasons for additional capacity');
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM dbo.movements)
+BEGIN
+    INSERT INTO dbo.movements 
+    (ProductId, WarehouseId, Amount, MovementType, TransferReference, Note)
+    VALUES
+    -- Initial stock (Wareneingang)
+    (1, 1, 100, 1, NULL, 'Initial stock Coca-Cola Cologne'),
+    (2, 1, 150, 1, NULL, 'Initial stock Pepsi Cologne'),
+    (3, 2, 200, 1, NULL, 'Initial stock Fanta Berlin'),
+    (4, 3, 120, 1, NULL, 'Initial stock Sprite Munich'),
+    (5, 4, 180, 1, NULL, 'Initial stock 7UP Hamburg'),
+
+    -- Verkäufe (Stock Out)
+    (1, 1, 10, 2, NULL, 'Sold 10 Coca-Cola'),
+    (2, 1, 20, 2, NULL, 'Sold 20 Pepsi'),
+    (3, 2, 15, 2, NULL, 'Sold 15 Fanta'),
+
+    -- Nachschub
+    (1, 2, 80, 1, NULL, 'Restock Coca-Cola Berlin'),
+    (3, 3, 60, 1, NULL, 'Restock Fanta Munich');
 END
 GO
