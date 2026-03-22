@@ -1,9 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using InventoryAPI.DTOs;
-using InventoryAPI.Models;
-using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
-using Azure;
 
 namespace InventoryAPI.Controllers;
 

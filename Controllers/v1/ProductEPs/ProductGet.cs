@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using InventoryAPI.DTOs;
-using Microsoft.EntityFrameworkCore;
 
 namespace InventoryAPI.Controllers;
 
