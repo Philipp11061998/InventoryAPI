@@ -25,12 +25,6 @@ public partial class WarehouseService
     {
         Warehouse? warehouse = await _dbContext.Warehouses.FirstOrDefaultAsync(w => w.Id == id && w.is_active);
         
-        return warehouse == null ? null : new WarehouseResponse
-        {
-            Id = warehouse.Id,
-            Name = warehouse.Name,
-            Description = warehouse.Description,
-            CreatedAt = warehouse.created_at
-        };
+        return warehouse == null ? null : ReturnWarehouseResponse(warehouse);
     }
 }

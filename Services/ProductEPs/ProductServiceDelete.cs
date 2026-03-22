@@ -19,13 +19,6 @@ public partial class ProductService
 
         await _dbContext.SaveChangesAsync();
         
-        return new ProductResponse
-        {
-            Id = product.Id,
-            Name = product.Name,
-            Sku = product.Sku,
-            Description = product.Description,
-            CreatedAt = product.created_at
-        };
+        return ReturnProductResponse(product);
     }
 }

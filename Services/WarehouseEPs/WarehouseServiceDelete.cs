@@ -19,12 +19,6 @@ public partial class WarehouseService
 
         await _dbContext.SaveChangesAsync();
         
-        return new WarehouseResponse
-        {
-            Id = warehouse.Id,
-            Name = warehouse.Name,
-            Description = warehouse.Description,
-            CreatedAt = warehouse.created_at
-        };;
+        return ReturnWarehouseResponse(warehouse);
     }
 }
