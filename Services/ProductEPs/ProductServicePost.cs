@@ -25,6 +25,6 @@ public partial class ProductService
 
         await _dbContext.SaveChangesAsync();
 
-        return ReturnProductResponse(product);
+        return MapToProductResponse(product);
     }
 }

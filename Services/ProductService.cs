@@ -14,7 +14,7 @@ public partial class ProductService
         _dbContext = dbContext;
     }
 
-    public ProductResponse ReturnProductResponse(Product product)
+    private ProductResponse MapToProductResponse(Product product)
     {
         return new ProductResponse
         {

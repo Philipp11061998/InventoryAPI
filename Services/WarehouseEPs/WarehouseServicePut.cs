@@ -29,6 +29,6 @@ public partial class WarehouseService
 
         await _dbContext.SaveChangesAsync();
         
-        return ReturnWarehouseResponse(warehouse);
+        return MapToWarehouseResponse(warehouse);
     }
 }

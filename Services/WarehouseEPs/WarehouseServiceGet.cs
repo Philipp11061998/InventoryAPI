@@ -25,6 +25,6 @@ public partial class WarehouseService
     {
         Warehouse? warehouse = await _dbContext.Warehouses.FirstOrDefaultAsync(w => w.Id == id && w.is_active);
         
-        return warehouse == null ? null : ReturnWarehouseResponse(warehouse);
+        return warehouse == null ? null : MapToWarehouseResponse(warehouse);
     }
 }

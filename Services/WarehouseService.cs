@@ -14,7 +14,7 @@ public partial class WarehouseService
         _dbContext = dbContext;
     }
 
-    public WarehouseResponse ReturnWarehouseResponse(Warehouse warehouse)
+    private WarehouseResponse MapToWarehouseResponse(Warehouse warehouse)
     {
         return new WarehouseResponse
         {

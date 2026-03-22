@@ -28,6 +28,6 @@ public partial class ProductService
         Product? product = await _dbContext.Products
             .FirstOrDefaultAsync(p => p.Id == id && p.is_active);
         
-        return product == null ? null : ReturnProductResponse(product);
+        return product == null ? null : MapToProductResponse(product);
     }
 }
