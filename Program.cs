@@ -5,6 +5,7 @@ using Microsoft.OpenApi;
 using InventoryAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using InventoryAPI.Services;
+using Swashbuckle.AspNetCore.SwaggerUI;
 
 namespace InventoryAPI;
 
@@ -44,7 +45,9 @@ public class Program
         var app = builder.Build();
 
         app.UseSwagger();
-        app.UseSwaggerUI();
+        app.UseSwaggerUI(options => 
+            options.DocExpansion(DocExpansion.None)
+        );
 
         app.MapControllers();
 

@@ -9,7 +9,7 @@ namespace InventoryAPI.Services;
 public partial class InventoryService
 {
 
-    public async Task<List<Inventory>> GetFullInventoryAsync()
+    public async Task<List<Inventory>> GetFullInventoryAsync(int? productId, int? warehouseId)
     {
         var inventory = await (from movement in _dbContext.Movements
             join product in _dbContext.Products
@@ -17,6 +17,8 @@ public partial class InventoryService
             join warehouse in _dbContext.Warehouses
             on movement.WarehouseId equals warehouse.Id
             where product.is_active && warehouse.is_active
+            && (productId == null ? true : product.Id == productId)
+            && (warehouseId == null ? true : warehouse.Id == warehouseId)
             select new
             {
                 ProductId = movement.ProductId,
@@ -40,5 +42,4 @@ public partial class InventoryService
         
         return inventory;
     }
-
 }
