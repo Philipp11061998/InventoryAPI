@@ -9,7 +9,7 @@ public partial class ProductService
 {
     public async Task<ProductResponse?> UpdateProductByIdAsync(int id, UpdateProductRequest productInput)
     {
-        if(string.IsNullOrEmpty(productInput.Sku) && string.IsNullOrEmpty(productInput.Name)) throw new InvalidOperationException("No changes possible. All fields are null");
+        if(string.IsNullOrEmpty(productInput.Sku) && string.IsNullOrEmpty(productInput.Name) && string.IsNullOrEmpty(productInput.Description)) throw new InvalidOperationException("No changes possible. All fields are null");
         
         Product? product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == id);
 
@@ -17,7 +17,7 @@ public partial class ProductService
 
         if(product.is_active == false) throw new InvalidOperationException("Product inactive. No actions possible");
 
-        if(string.IsNullOrEmpty(productInput.Sku))
+        if(!string.IsNullOrEmpty(productInput.Sku))
         {
             //Check if new Sku already exists
             Product? productSkuSearch = await _dbContext.Products.FirstOrDefaultAsync(p => p.Sku == productInput.Sku && p.Id != id);
