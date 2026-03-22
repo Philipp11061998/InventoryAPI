@@ -26,6 +26,7 @@ public class Program
 
         //Services Scoped registrieren(wird für jede Instanz der Controller neu erstellt, da sie auf DbContext zugreifen, welcher auch Scoped ist):
         builder.Services.AddScoped<ProductService>();
+        builder.Services.AddScoped<WarehouseService>();
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
