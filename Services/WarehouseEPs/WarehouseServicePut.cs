@@ -7,7 +7,7 @@ namespace InventoryAPI.Services;
 //Partial PUT Part
 public partial class WarehouseService
 {
-    public async Task<Warehouse?> UpdateWarehouseByIdAsync(int id, UpdateWarehouseRequest warehouseInput)
+    public async Task<WarehouseResponse?> UpdateWarehouseByIdAsync(int id, UpdateWarehouseRequest warehouseInput)
     {
         if(string.IsNullOrEmpty(warehouseInput.Name) && string.IsNullOrEmpty(warehouseInput.Description)) throw new InvalidOperationException("No changes possible. All fields are null");
         
@@ -29,6 +29,12 @@ public partial class WarehouseService
 
         await _dbContext.SaveChangesAsync();
         
-        return warehouse;
+        return new WarehouseResponse
+        {
+            Id = warehouse.Id,
+            Name = warehouse.Name,
+            Description = warehouse.Description,
+            CreatedAt = warehouse.created_at
+        };;
     }
 }

@@ -9,7 +9,7 @@ namespace InventoryAPI.Services;
 //Partial POST Part
 public partial class WarehouseService
 {
-    public async Task<Warehouse> CreateNewWarehouseAsync(CreateWarehouseRequest newWarehouse)
+    public async Task<WarehouseResponse> CreateNewWarehouseAsync(CreateWarehouseRequest newWarehouse)
     {
         var warehouse = new Warehouse
         {
@@ -26,6 +26,12 @@ public partial class WarehouseService
 
         await _dbContext.SaveChangesAsync();
 
-        return warehouse;
+        return new WarehouseResponse
+        {
+            Id = warehouse.Id,
+            Name = warehouse.Name,
+            Description = warehouse.Description,
+            CreatedAt = warehouse.created_at
+        };
     }
 }

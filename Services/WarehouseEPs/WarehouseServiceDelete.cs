@@ -7,7 +7,7 @@ namespace InventoryAPI.Services;
 //Partial PUT Part
 public partial class WarehouseService
 {
-    public async Task<Warehouse?> DeleteWarehouseByIdAsync(int id)
+    public async Task<WarehouseResponse?> DeleteWarehouseByIdAsync(int id)
     {        
         Warehouse? warehouse = await _dbContext.Warehouses.FirstOrDefaultAsync(w => w.Id == id);
 
@@ -19,6 +19,12 @@ public partial class WarehouseService
 
         await _dbContext.SaveChangesAsync();
         
-        return warehouse;
+        return new WarehouseResponse
+        {
+            Id = warehouse.Id,
+            Name = warehouse.Name,
+            Description = warehouse.Description,
+            CreatedAt = warehouse.created_at
+        };;
     }
 }
