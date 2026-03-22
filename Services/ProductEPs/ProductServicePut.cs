@@ -7,7 +7,7 @@ namespace InventoryAPI.Services;
 //Partial PUT Part
 public partial class ProductService
 {
-    public async Task<Product?> UpdateProductByIdAsync(int id, UpdateProductRequest productInput)
+    public async Task<ProductResponse?> UpdateProductByIdAsync(int id, UpdateProductRequest productInput)
     {
         if(string.IsNullOrEmpty(productInput.Sku) && string.IsNullOrEmpty(productInput.Name)) throw new InvalidOperationException("No changes possible. All fields are null");
         
@@ -30,6 +30,13 @@ public partial class ProductService
 
         await _dbContext.SaveChangesAsync();
         
-        return product;
+        return new ProductResponse
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Sku = product.Sku,
+            Description = product.Description,
+            CreatedAt = product.created_at
+        };
     }
 }

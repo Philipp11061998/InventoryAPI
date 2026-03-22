@@ -10,7 +10,7 @@ namespace InventoryAPI.Services;
 //Partial POST Part
 public partial class ProductService
 {
-    public async Task<Product> CreateNewProductAsync(CreateProductRequest newProduct)
+    public async Task<ProductResponse> CreateNewProductAsync(CreateProductRequest newProduct)
     {
         var product = new Product
         {
@@ -28,6 +28,13 @@ public partial class ProductService
 
         await _dbContext.SaveChangesAsync();
 
-        return product;
+        return new ProductResponse
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Sku = product.Sku,
+            Description = product.Description,
+            CreatedAt = product.created_at
+        };
     }
 }

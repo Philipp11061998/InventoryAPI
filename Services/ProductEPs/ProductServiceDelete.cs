@@ -7,7 +7,7 @@ namespace InventoryAPI.Services;
 //Partial PUT Part
 public partial class ProductService
 {
-    public async Task<Product?> DeleteProductByIdAsync(int id)
+    public async Task<ProductResponse?> DeleteProductByIdAsync(int id)
     {        
         Product? product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == id);
 
@@ -19,6 +19,13 @@ public partial class ProductService
 
         await _dbContext.SaveChangesAsync();
         
-        return product;
+        return new ProductResponse
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Sku = product.Sku,
+            Description = product.Description,
+            CreatedAt = product.created_at
+        };
     }
 }

@@ -9,16 +9,32 @@ namespace InventoryAPI.Services;
 public partial class ProductService
 {
 
-    public async Task<List<Product>> GetAllAsync()
+    public async Task<List<ProductResponse>> GetAllAsync()
     {
         return await _dbContext.Products.Where(p => p.is_active)
+            .Select(p => new ProductResponse
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Sku = p.Sku,
+                Description = p.Description,
+                CreatedAt = p.created_at
+            })
             .ToListAsync();
     }
 
-    public async Task<Product?> GetProductByIdAsync(int id)
+    public async Task<ProductResponse?> GetProductByIdAsync(int id)
     {
-        Product? product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == id && p.is_active);
+        Product? product = await _dbContext.Products
+            .FirstOrDefaultAsync(p => p.Id == id && p.is_active);
         
-        return product;
+        return product == null ? null : new ProductResponse
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Sku = product.Sku,
+            Description = product.Description,
+            CreatedAt = product.created_at
+        };
     }
 }
