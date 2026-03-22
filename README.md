@@ -37,6 +37,7 @@ The project follows a simple layered structure:
 - **Data** contains the EF Core `DbContext`
 - **DTOs** are used for request models
 - **Models** represent the internal domain and database entities
+- **ResponseDTOs** Responses aren't database entities and ge mapped by servicescoped functions
 
 Current flow:
 
@@ -193,7 +194,7 @@ Planned improvements include:
 ## Roadmap
 
 ### Next planned improvements
-- introduce response DTOs
+- ~~introduce response DTOs ~~ (finished 22.03.2026)
 - add centralized exception handling
 - add automated tests for business logic
 - improve API consistency and error responses
