@@ -1,6 +1,7 @@
 using InventoryAPI.Data;
 using InventoryAPI.DTOs;
 using InventoryAPI.Models;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 

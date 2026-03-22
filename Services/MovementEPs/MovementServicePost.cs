@@ -9,7 +9,7 @@ namespace InventoryAPI.Services;
 //Partial POST Part
 public partial class MovementService
 {
-    public async Task<InventoryMovement> CreateNewMovementAsync(CreateMovementRequest newMovement)
+    public async Task<Movement> CreateNewMovementAsync(CreateMovementRequest newMovement)
     {
         Product? product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == newMovement.ProductId && p.is_active);
         Warehouse? warehouse = await _dbContext.Warehouses.FirstOrDefaultAsync(w => w.Id == newMovement.WarehouseId && w.is_active);
@@ -31,7 +31,7 @@ public partial class MovementService
         }
         
 
-        var movement = new InventoryMovement
+        var movement = new Movement
         {
             ProductId = newMovement.ProductId,
             WarehouseId = newMovement.WarehouseId,

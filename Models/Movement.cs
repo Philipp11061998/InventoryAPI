@@ -2,7 +2,7 @@ using InventoryAPI.Common;
 
 namespace InventoryAPI.Models;
 
-public class InventoryMovement
+public class Movement
 {
     public int Id { get; set; }
     public int ProductId { get; set; }

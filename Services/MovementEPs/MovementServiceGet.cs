@@ -9,14 +9,14 @@ namespace InventoryAPI.Services;
 public partial class MovementService
 {
 
-    public async Task<List<InventoryMovement>> GetAllAsync()
+    public async Task<List<Movement>> GetAllAsync()
     {
         return await _dbContext.Movements.ToListAsync();
     }
 
-    public async Task<InventoryMovement?> GetMovementByIdAsync(int id)
+    public async Task<Movement?> GetMovementByIdAsync(int id)
     {
-        InventoryMovement? movement = await _dbContext.Movements.FirstOrDefaultAsync(p => p.Id == id);
+        Movement? movement = await _dbContext.Movements.FirstOrDefaultAsync(p => p.Id == id);
         
         return movement;
     }

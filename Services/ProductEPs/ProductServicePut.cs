@@ -28,15 +28,6 @@ public partial class ProductService
         product.Sku = productInput.Sku == null ? product.Sku : productInput.Sku;
         product.Description = productInput.Description == null ? product.Description : productInput.Description;
 
-        //Hier Update aller InventoryMovements bei Sku Änderung
-        // if(productInput.Sku != null)
-        // {
-        //     await _dbContext.Movements.Where(p => p.Id == id)
-        //         .ExecuteUpdateAsync(setters => setters
-        //             .SetProperty(b => b.Sku, productInput.Sku == null ? product.Sku : productInput.Sku)
-        //         );
-        // }
-
         await _dbContext.SaveChangesAsync();
         
         return product;
