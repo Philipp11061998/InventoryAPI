@@ -7,11 +7,11 @@ namespace InventoryAPI.Controllers;
 [Route("api/[controller]")]
 public partial class WarehousesController : ControllerBase
 {
-    private readonly WarehouseService _productService;
+    private readonly WarehouseService _warehouseService;
 
     public WarehousesController(WarehouseService warehouseService)
     {
-        _productService = warehouseService;
+        _warehouseService = warehouseService;
     }
 
     
