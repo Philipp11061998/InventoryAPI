@@ -15,6 +15,8 @@ public partial class ProductService
 
         if(product == null) return null;
 
+        if(product.is_active == false) throw new InvalidOperationException("Product inactive. No actions possible");
+
         if(string.IsNullOrEmpty(productInput.Sku))
         {
             //Check if new Sku already exists
