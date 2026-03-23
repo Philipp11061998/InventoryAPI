@@ -1,0 +1,18 @@
+compose-usage.txt
+
+# Build folders
+bin/
+obj/
+
+# VS Code
+.vscode/
+
+# User files
+*.user
+*.suo
+
+# Logs
+*.log
+
+# OS
+.DS_Store
