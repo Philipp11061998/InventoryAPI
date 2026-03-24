@@ -13,39 +13,8 @@ public class MovementServiceTests
     [Fact]
     public async Task CreateNewMovementAsyncThrowErrorIfProductIsOutOfStock()
     {
-        var connection = new SqliteConnection("DataSource=:memory:");
-        await connection.OpenAsync();
-
-        var options = new DbContextOptionsBuilder<InventoryDbContext>()
-            .UseSqlite(connection)
-            .Options;
-
-        var dbContext = new InventoryDbContext(options);
-
-        await dbContext.Database.EnsureCreatedAsync();
-
-        var product = new Product
-        {
-            Sku = "test-product",
-            Name = "Test Produkt",
-            Description = null,
-            is_active = true
-        };
-
-        dbContext.Products.Add(product);
-
-        var warehouse = new Warehouse
-        {
-            Name = "Test Warehouse",
-            Description = null,
-            is_active = true
-        };
-
-        dbContext.Warehouses.Add(warehouse);
-
-        await dbContext.SaveChangesAsync();
-
-        var movementService = new MovementService(dbContext);
+        // Arrange
+        var (dbContext, product, warehouse, movementService) = await CreateTestPreparations();
 
         var newMovement = new CreateMovementRequest
         {
@@ -55,6 +24,7 @@ public class MovementServiceTests
             MovementType = MovementType.Outbound
         };
 
+        // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
             await movementService.CreateNewMovementAsync(newMovement);
@@ -64,45 +34,8 @@ public class MovementServiceTests
     [Fact]
     public async Task CreateNewMovementAsync_ShouldCreateInboundMovement()
     {
-        var connection = new SqliteConnection("DataSource=:memory:");
-        await connection.OpenAsync();
-
-        var options = new DbContextOptionsBuilder<InventoryDbContext>()
-            .UseSqlite(connection)
-            .Options;
-
-        var dbContext = new InventoryDbContext(options);
-
-        await dbContext.Database.EnsureCreatedAsync();
-
-        var product = new Product
-        {
-            Sku = "test-product",
-            Name = "Test Produkt",
-            Description = null,
-            is_active = true
-        };
-
-        dbContext.Products.Add(product);
-
-        var warehouse = new Warehouse
-        {
-            Name = "Test Warehouse",
-            Description = null,
-            is_active = true
-        };
-
-        dbContext.Warehouses.Add(warehouse);
-
-        await dbContext.SaveChangesAsync();
-
-        var productSearch = dbContext.Products.Where(p => p.Id == product.Id);
-        var warehouseSearch = dbContext.Warehouses.Where(wh => wh.Id == warehouse.Id);
-
-        //Check ob beide Einträge valide waren
-        Assert.True(productSearch.Count() > 0 && warehouseSearch.Count() > 0);
-
-        var movementService = new MovementService(dbContext);
+        // Arrange
+        var (dbContext, product, warehouse, movementService) = await CreateTestPreparations();
 
         var newMovement = new CreateMovementRequest
         {
@@ -112,65 +45,24 @@ public class MovementServiceTests
             MovementType = MovementType.Inbound
         };
 
+        // Act
         var movementResult = await movementService.CreateNewMovementAsync(newMovement);
-
-        //Check ob Movement korrekt erstellt wurde
-        Assert.True(movementResult != null);
-
         var movementSearch = dbContext.Movements.FirstOrDefault(m => m.Id == movementResult.Id);
 
-        //Check ob vorhanden und richtige Werte gesetzt wurden
-        Assert.True(
-            movementSearch != null &&
-            movementSearch.Amount == newMovement.Amount && 
-            movementSearch.ProductId == newMovement.ProductId &&
-            movementSearch.MovementType == MovementType.Inbound &&
-            movementSearch.WarehouseId == newMovement.WarehouseId
-        );
+        // Assert
+        Assert.NotNull(movementResult);
+        Assert.NotNull(movementSearch);
+        Assert.Equal(newMovement.Amount, movementSearch.Amount);
+        Assert.Equal(newMovement.ProductId, movementSearch.ProductId);
+        Assert.Equal(MovementType.Inbound, movementSearch.MovementType);
+        Assert.Equal(newMovement.WarehouseId, movementSearch.WarehouseId);
     }
 
     [Fact]
     public async Task CreateNewMovementAsync_OutboundShouldReduceInventory()
     {
-        var connection = new SqliteConnection("DataSource=:memory:");
-        await connection.OpenAsync();
-
-        var options = new DbContextOptionsBuilder<InventoryDbContext>()
-            .UseSqlite(connection)
-            .Options;
-
-        var dbContext = new InventoryDbContext(options);
-
-        await dbContext.Database.EnsureCreatedAsync();
-
-        var product = new Product
-        {
-            Sku = "test-product",
-            Name = "Test Produkt",
-            Description = null,
-            is_active = true
-        };
-
-        dbContext.Products.Add(product);
-
-        var warehouse = new Warehouse
-        {
-            Name = "Test Warehouse",
-            Description = null,
-            is_active = true
-        };
-
-        dbContext.Warehouses.Add(warehouse);
-
-        await dbContext.SaveChangesAsync();
-
-        var productSearch = dbContext.Products.Where(p => p.Id == product.Id);
-        var warehouseSearch = dbContext.Warehouses.Where(wh => wh.Id == warehouse.Id);
-
-        //Check ob beide Einträge valide waren
-        Assert.True(productSearch.Count() > 0 && warehouseSearch.Count() > 0);
-
-        var movementService = new MovementService(dbContext);
+        // Arrange
+        var (dbContext, product, warehouse, movementService) = await CreateTestPreparations();
 
         var newInboundMovement = new CreateMovementRequest
         {
@@ -190,27 +82,60 @@ public class MovementServiceTests
             MovementType = MovementType.Outbound
         };
 
-        var outboundMovementResult = await movementService.CreateNewMovementAsync(newOutboundMovement);
-
-        var outboundMovementSearch = dbContext.Movements.FirstOrDefault(m => m.Id == outboundMovementResult.Id);
-        
-        //Check ob alles richtig gesetzt wurde
-        Assert.True(
-            outboundMovementSearch != null &&
-            outboundMovementSearch.Amount == newOutboundMovement.Amount && 
-            outboundMovementSearch.ProductId == newOutboundMovement.ProductId &&
-            outboundMovementSearch.MovementType == MovementType.Outbound &&
-            outboundMovementSearch.WarehouseId == newOutboundMovement.WarehouseId
-        );
-
-        //Check ob neuer Bestand korrekt ist
         var inventoryService = new InventoryService(dbContext);
 
+        // Act
+        var outboundMovementResult = await movementService.CreateNewMovementAsync(newOutboundMovement);
+        var outboundMovementSearch = dbContext.Movements.FirstOrDefault(m => m.Id == outboundMovementResult.Id);
         var inventorySearch = await inventoryService.GetFullInventoryAsync(product.Id, warehouse.Id);
 
-        Assert.True(
-            inventorySearch.Count() == 1 && 
-            inventorySearch.ElementAt(0).Amount == newInboundMovement.Amount - newOutboundMovement.Amount
-        );
+        // Assert
+        Assert.NotNull(outboundMovementSearch);
+        Assert.Equal(newOutboundMovement.Amount, outboundMovementSearch.Amount);
+        Assert.Equal(newOutboundMovement.ProductId, outboundMovementSearch.ProductId);
+        Assert.Equal(MovementType.Outbound, outboundMovementSearch.MovementType);
+        Assert.Equal(newOutboundMovement.WarehouseId, outboundMovementSearch.WarehouseId);
+
+        Assert.Single(inventorySearch);
+        Assert.Equal(newInboundMovement.Amount - newOutboundMovement.Amount, inventorySearch.First().Amount);
+    }
+
+    public async Task<(InventoryDbContext dbContext, Product product, Warehouse warehouse, MovementService movementService)> CreateTestPreparations()
+    {
+        var connection = new SqliteConnection("DataSource=:memory:");
+        await connection.OpenAsync();
+
+        var options = new DbContextOptionsBuilder<InventoryDbContext>()
+            .UseSqlite(connection)
+            .Options;
+
+        var dbContext = new InventoryDbContext(options);
+
+        await dbContext.Database.EnsureCreatedAsync();
+
+        var product = new Product
+        {
+            Sku = "test-product",
+            Name = "Test Produkt",
+            Description = null,
+            is_active = true
+        };
+
+        dbContext.Products.Add(product);
+
+        var warehouse = new Warehouse
+        {
+            Name = "Test Warehouse",
+            Description = null,
+            is_active = true
+        };
+
+        dbContext.Warehouses.Add(warehouse);
+
+        await dbContext.SaveChangesAsync();
+
+        var movementService = new MovementService(dbContext);
+
+        return (dbContext, product, warehouse, movementService);
     }
 }
