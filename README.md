@@ -1,229 +1,230 @@
-# Inventory Management API
+# 📦 Inventory Management API
 
-A modern REST API for managing products, warehouses, stock movements, and aggregated inventory levels.
+Eine moderne REST API zur Verwaltung von Produkten, Lagern, Bestandsbewegungen und aggregierten Lagerbeständen.
 
-This project was built as a backend portfolio project to demonstrate practical API design, business logic, database integration, and clean project structure with .NET 8, Entity Framework Core, SQL Server, and Docker.
+Dieses Projekt wurde als Backend-Portfolio-Projekt entwickelt, um praxisnahe API-Entwicklung, Business-Logik, Datenbankintegration und eine saubere Projektstruktur mit .NET 8, Entity Framework Core, SQL Server und Docker zu demonstrieren.
 
-## Overview
+---
 
-The Inventory Management API models a realistic warehouse and stock management workflow.
+## 🧭 Überblick
 
-Instead of storing a static stock value per product, the current inventory is calculated from historical stock movements. This makes the system more transparent, extensible, and closer to real business scenarios.
+Die Inventory Management API bildet einen realistischen Lager- und Bestandsverwaltungsprozess ab.
 
-The project currently supports:
-- product management
-- warehouse management
-- stock movements (`Inbound` / `Outbound`)
-- aggregated inventory queries
-- soft delete for products
-- validation of business rules such as preventing negative stock
+Anstatt einen statischen Lagerbestand pro Produkt zu speichern, wird der aktuelle Bestand aus historischen Bestandsbewegungen berechnet. Dadurch ist das System transparenter, flexibler und näher an realen Business-Szenarien.
 
-## Tech Stack
+### Aktuell unterstützt das Projekt:
+- Produktverwaltung
+- Lagerverwaltung
+- Bestandsbewegungen (Inbound / Outbound)
+- Aggregierte Bestandsabfragen
+- Soft Delete für Produkte und Lager
+- Validierung zentraler Business-Regeln (z. B. kein negativer Bestand)
 
-- **.NET 8**
-- **ASP.NET Core Web API**
-- **Entity Framework Core**
-- **SQL Server**
-- **Docker**
-- **Swagger / OpenAPI**
-- **C#**
+---
 
-## Architecture
+## 🛠 Tech Stack
 
-The project follows a simple layered structure:
+- .NET 8
+- ASP.NET Core Web API
+- Entity Framework Core
+- SQL Server (Docker)
+- Swagger / OpenAPI
+- xUnit + SQLite (InMemory) für Tests
+- C#
 
-- **Controllers** handle HTTP requests and responses
-- **Services** contain business logic
-- **Data** contains the EF Core `DbContext`
-- **DTOs** are used for request models
-- **Models** represent the internal domain and database entities
-- **ResponseDTOs** Responses aren't database entities and ge mapped by servicescoped functions
+---
 
-Current flow:
+## 🏗 Architektur
 
-`Controller -> Service -> DbContext -> SQL Server`
+Das Projekt folgt einer klaren, servicebasierten Struktur:
 
-This structure keeps the code readable, testable, and easy to extend.
+- Controller → HTTP Layer (Requests / Responses)
+- Services → Business-Logik
+- Data → EF Core DbContext
+- DTOs → Request- und Response-Modelle
+- Models → interne Domain- und Datenbankrepräsentation
 
-## Core Concepts
+### Datenfluss
 
-### Products
-Products can be created, updated, queried, and soft deleted.
+Controller → Service → DbContext → SQL Server
 
-### Warehouses
-Warehouses represent physical storage locations.
+### Response-DTOs
 
-### Inventory Movements
-Inventory is not stored as a fixed value.  
-Instead, each stock change is recorded as a movement:
+Response-DTOs werden bewusst genutzt, um:
+- interne Datenstrukturen zu kapseln
+- API-Antworten stabil zu halten
+- Änderungen an der Datenbank vom Client zu entkoppeln
 
-- `Inbound` increases stock
-- `Outbound` decreases stock
+---
 
-### Inventory Aggregation
-The current stock level is calculated by grouping movements by product and warehouse and summing all signed amounts.
+## 🔑 Kernkonzepte
 
-### Error Handling
-- Centralized exception handling using custom middleware
-- Consistent JSON error responses
-- Controllers are free of try/catch blocks
-- Business exceptions are mapped to HTTP status codes
-- Structured logging for all unhandled exceptions
+### Produkte
+Produkte können erstellt, aktualisiert, abgefragt und per Soft Delete deaktiviert werden.
 
-## Features
+### Lager (Warehouses)
+Repräsentieren physische Lagerorte.
 
-### Product API
-- `GET /api/products`
-- `GET /api/products/{id}`
-- `POST /api/products`
-- `PUT /api/products/{id}`
-- `DELETE /api/products/{id}`
+### Bestandsbewegungen
+Bestände werden nicht direkt gespeichert, sondern über Bewegungen modelliert:
 
-### Warehouse API
-- `GET /api/warehouses`
-- `GET /api/warehouses/{id}`
+- Inbound → erhöht Bestand
+- Outbound → reduziert Bestand
 
-### Movement API
-- `GET /api/movements`
-- `GET /api/movements/{id}`
-- `POST /api/movements`
+### Bestandsaggregation
+Der aktuelle Bestand wird berechnet durch:
+- Gruppierung nach Produkt und Lager
+- Summierung aller Bewegungen (mit Vorzeichen)
 
-### Inventory API
-- `GET /api/inventory`
-- optional filtering via query parameters:
-  - `productId`
-  - `warehouseId`
+---
 
-Example:
+## ⚙️ Fehlerbehandlung & Logging
 
-`GET /api/inventory?productId=1&warehouseId=2`
+- Zentrale Exception Middleware
+- Einheitliche JSON-Fehlerantworten
+- Controller enthalten keine try/catch-Blöcke
+- Business-Fehler werden auf passende HTTP-Statuscodes gemappt
+- Strukturierte Logs für Fehlerfälle
 
-## Business Rules
+---
 
-The API already enforces several important business rules:
+## 🧪 Tests
 
-- products must exist before movements can be created
-- warehouses must exist before movements can be created
-- inactive products cannot be used for new stock movements
-- inactive warehouses cannot be used for new stock movements
-- movement amount must be greater than zero
-- outbound movements are rejected if the available stock is insufficient
-- products are soft deleted instead of physically removed
+Das Projekt enthält automatisierte Tests für zentrale Business-Logik:
 
-## Why stock is calculated from movements
+- xUnit als Test-Framework
+- SQLite InMemory für isolierte Tests ohne echte Datenbank
 
-A central design decision in this project is that stock is derived from movement history instead of being stored directly.
+### Abgedeckte Szenarien:
+- Outbound ohne Bestand → Fehler
+- Inbound → erfolgreich
+- Inbound + Outbound → korrekter Restbestand
 
-Advantages:
-- better auditability
-- easier debugging of stock changes
-- more realistic business modeling
-- extensibility for future features like transfers, alerts, and reporting
+---
 
-## Validation
+## 🧪 Qualitätssicherung
 
-Validation is handled with DTOs and data annotations.
+Die Business-Logik wird durch automatisierte Tests abgesichert.
 
-Examples:
-- required request fields
-- string length constraints
-- numeric range checks
+Dabei werden sowohl Fehlerfälle (z. B. Outbound ohne Bestand) als auch erfolgreiche Szenarien validiert.
 
-## Database
+Die Tests laufen unabhängig von der produktiven Datenbank mithilfe von SQLite InMemory.
 
-The project uses SQL Server running in Docker.
+---
 
-An initialization script is used to:
-- create the database if needed
-- create tables
-- seed demo data for products, warehouses, and movements
+## 📏 Business-Regeln
 
-## Local Setup
+- Produkte müssen existieren, bevor Bewegungen erstellt werden
+- Lager müssen existieren
+- Inaktive Produkte/Lager dürfen nicht verwendet werden
+- Amount muss größer als 0 sein
+- Outbound wird verhindert, wenn Bestand nicht ausreicht
+- Soft Delete statt physischem Löschen
 
-### Prerequisites
+---
+
+## 🧠 Design-Entscheidung: Bewegungsbasierter Bestand
+
+Der Bestand wird bewusst nicht direkt gespeichert, sondern aus Bewegungen berechnet.
+
+### Vorteile:
+- vollständige Nachvollziehbarkeit (Audit)
+- bessere Debugbarkeit
+- realitätsnahe Modellierung
+- einfache Erweiterbarkeit (Transfers, Reports, Alerts)
+
+---
+
+## 🗄 Datenbank
+
+- SQL Server läuft in Docker
+- Initialisierung über SQL-Skript
+
+Automatisch:
+- Erstellung der Datenbank
+- Erstellung der Tabellen
+- Seed-Daten
+
+---
+
+## 🚀 Lokales Setup
+
+### Voraussetzungen
 - .NET 8 SDK
 - Docker
-- SQL Server container running locally
 
-### Run the project
-1. Start the SQL Server container
-2. Ensure the database init script has run successfully
-3. Start the API
-4. Open Swagger
+### Start
 
-Swagger is available at:
+1. SQL Server Container starten
+2. Init-Skript ausführen lassen
+3. API starten
 
-`http://localhost:8080/swagger`
+Swagger erreichbar unter:
 
-## Example API Workflow
+http://localhost:8080/swagger
 
-### 1. Create a product
-Create a new product via `POST /api/products`
+---
 
-### 2. Create a warehouse
-Create or use an existing warehouse
+## 🔄 Beispiel-Workflow
 
-### 3. Add stock
-Create an `Inbound` movement for a product and warehouse
+1. Produkt erstellen  
+2. Lager erstellen  
+3. Bestand hinzufügen (Inbound)  
+4. Bestand reduzieren (Outbound)  
+5. Inventory abfragen  
 
-### 4. Remove stock
-Create an `Outbound` movement
+---
 
-### 5. Query current inventory
-Use `GET /api/inventory` to view calculated stock levels
+## 🎯 Projektziele
 
-## Project Goals
+Dieses Projekt demonstriert praxisrelevante Backend-Skills:
 
-This project was created to demonstrate backend development skills relevant to real-world applications, including:
+- REST API Design
+- Service-basierte Architektur
+- Asynchrone Datenbankzugriffe
+- Business-Logik-Validierung
+- Relationale Datenmodellierung
+- LINQ & Aggregationen
+- Docker-basierte Entwicklung
+- Testgetriebene Absicherung von Logik
 
-- REST API design
-- service-based architecture
-- asynchronous database access
-- business rule validation
-- relational database modeling
-- LINQ and aggregation queries
-- Docker-based local development
+---
 
-## Current Limitations
+## 🛣 Roadmap / Geplante Erweiterungen
 
-This is an actively evolving portfolio project.
+- Response DTOs ✅  
+- Zentrale Exception Middleware ✅  
+- Automatisierte Tests ✅  
+- Authentifizierung  
+- Logging-Ausbau  
+- Erweiterte Business-Features  
+- Transfers zwischen Lagern  
+- Low-Stock Monitoring  
 
-Planned improvements include:
-- response DTOs
-- global error handling middleware
-- automated tests
-- authentication and authorization
-- logging
-- richer warehouse endpoints
-- transfer workflows between warehouses
-- low-stock monitoring
+---
 
-## Roadmap
+## 🔐 Authentifizierung (geplant)
 
-### Next planned improvements
-- ~~introduce response DTOs ~~ (finished 22.03.2026)
-- ~~add centralized exception handling~~ (finished 23.03.2026)
-- add automated tests for business logic
-- improve API consistency and error responses
-- extend warehouse CRUD functionality
-- add authentication and authorization
-- improve documentation and setup experience
+Langfristig ist die Integration moderner Authentifizierungsmechanismen geplant (z. B. tokenbasiert oder cloudbasiert).
 
-## Authentication Roadmap
+Der Fokus liegt aktuell bewusst auf:
+- stabiler Business-Logik
+- sauberem Backend-Design
 
-Authentication is planned for a future version of the project.
+---
 
-The long-term goal is to add modern authentication and authorization concepts, potentially with cloud-based identity integration later on. For now, the focus is on building a solid backend foundation with correct business logic, data modeling, and API design.
+## 👨‍💻 Portfolio-Kontext
 
-## Portfolio Context
+Dieses Projekt ist Teil meines Backend-Portfolios und dient zur Vertiefung von:
 
-This project is part of my backend portfolio and was built to deepen my experience with:
-- backend architecture
-- .NET API development
-- SQL-based data modeling
-- service-oriented design
-- realistic business logic implementation
+- .NET API Entwicklung
+- Backend-Architektur
+- Datenmodellierung
+- Service-orientiertem Design
+- realitätsnaher Business-Logik
 
-## Author
+---
 
-Backend portfolio project by Philipp.
+## ✍️ Autor
+
+Backend Portfolio Projekt von Philipp Joeris
