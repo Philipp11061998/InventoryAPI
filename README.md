@@ -1,8 +1,9 @@
 # 📦 Inventory Management API
-
 Eine moderne REST API zur Verwaltung von Produkten, Lagern, Bestandsbewegungen und aggregierten Lagerbeständen.
 
 Dieses Projekt wurde als Backend-Portfolio-Projekt entwickelt, um praxisnahe API-Entwicklung, Business-Logik, Datenbankintegration und eine saubere Projektstruktur mit .NET 8, Entity Framework Core, SQL Server und Docker zu demonstrieren.
+
+[![.NET CI](https://github.com/Philipp11061998/InventoryAPI/actions/workflows/dotnet.yml/badge.svg)](https://github.com/Philipp11061998/InventoryAPI/actions/workflows/dotnet.yml)
 
 ---
 
