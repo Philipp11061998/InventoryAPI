@@ -11,39 +11,112 @@ namespace InventoryAPI.Tests;
 public class MovementServiceTests
 {
     [Fact]
-    public async Task CreateNewMovementAsyncThrowErrorIfProductIsOutOfStock()
+    public async Task CreateNewMovementAsync_ProductDoesNotExist_ThrowsInvalidOperationException()
     {
         // Arrange
         var (dbContext, product, warehouse, movementService) = await CreateTestPreparations();
 
-        var newMovement = new CreateMovementRequest
-        {
-            ProductId = product.Id,
-            WarehouseId = warehouse.Id,
-            Amount = 1,
-            MovementType = MovementType.Outbound
-        };
+        var newMovement = CreateValidMovementRequest(product, warehouse);
+
+        newMovement.ProductId = 2;
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
             await movementService.CreateNewMovementAsync(newMovement);
         });
+
+        Assert.Contains("Product doesn't exist", ex.Message);
+
     }
 
     [Fact]
-    public async Task CreateNewMovementAsync_ShouldCreateInboundMovement()
+    public async Task CreateNewMovementAsync_WarehouseDoesNotExist_ThrowsInvalidOperationException()
     {
         // Arrange
         var (dbContext, product, warehouse, movementService) = await CreateTestPreparations();
 
-        var newMovement = new CreateMovementRequest
+        var newMovement = CreateValidMovementRequest(product, warehouse);
+
+        newMovement.WarehouseId = 2;
+
+        // Act & Assert
+        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
-            ProductId = product.Id,
-            WarehouseId = warehouse.Id,
-            Amount = 21,
-            MovementType = MovementType.Inbound
-        };
+            await movementService.CreateNewMovementAsync(newMovement);
+        });
+
+        Assert.Contains("Warehouse doesn't exist", ex.Message);
+    }
+
+    [Fact]
+    public async Task CreateNewMovementAsync_WarehouseAndProductDoesNotExist_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var (dbContext, product, warehouse, movementService) = await CreateTestPreparations();
+
+        var newMovement = CreateValidMovementRequest(product, warehouse);
+
+        newMovement.WarehouseId = 2;
+        newMovement.ProductId = 2;
+
+        // Act & Assert
+        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await movementService.CreateNewMovementAsync(newMovement);
+        });
+
+        Assert.Contains("Product doesn't exist", ex.Message);
+        Assert.Contains("Warehouse doesn't exist", ex.Message);
+    }
+
+    [Fact]
+    public async Task CreateNewMovementAsync_AmountSmallerOrEqualZeo_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var (dbContext, product, warehouse, movementService) = await CreateTestPreparations();
+
+        var newMovement = CreateValidMovementRequest(product, warehouse);
+
+        newMovement.Amount = -1;
+
+        // Act & Assert
+        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await movementService.CreateNewMovementAsync(newMovement);
+        });
+
+        Assert.Contains("Amount can't be lower or equal Zero", ex.Message);
+    }
+
+    [Fact]
+    public async Task CreateNewMovementAsync_ProductIsOutOfStock_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var (dbContext, product, warehouse, movementService) = await CreateTestPreparations();
+
+        var newMovement = CreateValidMovementRequest(product, warehouse);
+
+        newMovement.MovementType = MovementType.Outbound;
+
+        // Act & Assert
+        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await movementService.CreateNewMovementAsync(newMovement);
+        });
+
+        Assert.Contains("is only available", ex.Message);
+    }
+
+    [Fact]
+    public async Task CreateNewMovementAsync_ValidInboundRequest_CreatesMovement()
+    {
+        // Arrange
+        var (dbContext, product, warehouse, movementService) = await CreateTestPreparations();
+
+        var newMovement = CreateValidMovementRequest(product, warehouse);
+
+        newMovement.Amount = 21;
 
         // Act
         var movementResult = await movementService.CreateNewMovementAsync(newMovement);
@@ -59,28 +132,22 @@ public class MovementServiceTests
     }
 
     [Fact]
-    public async Task CreateNewMovementAsync_OutboundShouldReduceInventory()
+    public async Task CreateNewMovementAsync_ValidOutboundRequest_ReducesInventory()
     {
         // Arrange
         var (dbContext, product, warehouse, movementService) = await CreateTestPreparations();
 
-        var newInboundMovement = new CreateMovementRequest
-        {
-            ProductId = product.Id,
-            WarehouseId = warehouse.Id,
-            Amount = 10,
-            MovementType = MovementType.Inbound
-        };
+        var newInboundMovement = CreateValidMovementRequest(product, warehouse);
+
+        newInboundMovement.Amount = 10;
 
         await movementService.CreateNewMovementAsync(newInboundMovement);
 
-        var newOutboundMovement = new CreateMovementRequest
-        {
-            ProductId = product.Id,
-            WarehouseId = warehouse.Id,
-            Amount = 4,
-            MovementType = MovementType.Outbound
-        };
+        var newOutboundMovement = CreateValidMovementRequest(product, warehouse);
+
+        newOutboundMovement.Amount = 4;
+        newOutboundMovement.MovementType = MovementType.Outbound;
+
 
         var inventoryService = new InventoryService(dbContext);
 
@@ -100,7 +167,7 @@ public class MovementServiceTests
         Assert.Equal(newInboundMovement.Amount - newOutboundMovement.Amount, inventorySearch.First().Amount);
     }
 
-    public async Task<(InventoryDbContext dbContext, Product product, Warehouse warehouse, MovementService movementService)> CreateTestPreparations()
+    private async Task<(InventoryDbContext dbContext, Product product, Warehouse warehouse, MovementService movementService)> CreateTestPreparations()
     {
         var connection = new SqliteConnection("DataSource=:memory:");
         await connection.OpenAsync();
@@ -137,5 +204,16 @@ public class MovementServiceTests
         var movementService = new MovementService(dbContext);
 
         return (dbContext, product, warehouse, movementService);
+    }
+
+    private CreateMovementRequest CreateValidMovementRequest(Product product, Warehouse warehouse)
+    {
+        return new CreateMovementRequest
+        {
+            ProductId = product.Id,
+            WarehouseId = warehouse.Id,
+            Amount = 21,
+            MovementType = MovementType.Inbound
+        };
     }
 }
