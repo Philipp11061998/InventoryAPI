@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace InventoryAPI.Services;
 
-//Partial PUT Part
+//Partial DELETE Part
 public partial class ProductService
 {
     public async Task<ProductResponse?> DeleteProductByIdAsync(int id)
