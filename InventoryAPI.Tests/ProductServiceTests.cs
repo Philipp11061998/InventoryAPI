@@ -1,4 +1,3 @@
-using System.Net.NetworkInformation;
 using InventoryAPI.Data;
 using InventoryAPI.DTOs;
 using InventoryAPI.Models;
@@ -166,9 +165,11 @@ public class ProductServiceTests
             Sku = "test-sku"  
         };
 
+        //Act
         var productInsert = await productService.CreateNewProductAsync(newProductRequest);
         var productDbCheck = dbContext.Products.FirstOrDefault(p => p.Id == productInsert.Id);
 
+        //Assert
         Assert.NotNull(productInsert);
         Assert.NotNull(productDbCheck);
         Assert.Equal(productInsert.Id, productDbCheck.Id);
@@ -176,6 +177,125 @@ public class ProductServiceTests
         Assert.Equal(newProductRequest.Name, productDbCheck.Name);
         Assert.Equal(newProductRequest.Sku, productInsert.Sku);
         Assert.Equal(newProductRequest.Sku, productDbCheck.Sku);
+    }
+
+    [Fact]
+    public async Task UpdateProductByIdAsync_ValidUpdate_ReturnsUpdatedProduct()
+    {
+        // Arrange
+        var (dbContext, product, productService) = await CreateTestPreparations();
+        
+        var updateProductRequest = new UpdateProductRequest
+        {
+            Name = "Test Update",
+            Sku = "test-sku-for-update"
+        };
+
+        // Act
+        var result = await productService.UpdateProductByIdAsync(product.Id, updateProductRequest);
+        var databaseProduct = dbContext.Products.FirstOrDefault(p => p.Id == product.Id);
+
+        //Assert
+        Assert.NotNull(result);
+        Assert.Equal(product.Id, result.Id);
+        Assert.Equal(updateProductRequest.Name, result.Name);
+        Assert.Equal(updateProductRequest.Sku, result.Sku);
+        Assert.NotNull(databaseProduct);
+        Assert.Equal(product.Id, databaseProduct.Id);
+        Assert.Equal(updateProductRequest.Name, databaseProduct.Name);
+        Assert.Equal(updateProductRequest.Sku, databaseProduct.Sku);
+    }
+
+    [Fact]
+    public async Task UpdateProductByIdAsync_UpdateWithInvalidParameters_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var (dbContext, product, productService) = await CreateTestPreparations();
+        
+        var updateProductRequest = new UpdateProductRequest
+        {
+            Name = null,
+            Sku = null,
+            Description = null
+        };
+
+        //Act & Assert
+        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+           await productService.UpdateProductByIdAsync(product.Id, updateProductRequest);
+        });
+
+        Assert.Contains("No changes possible", ex.Message);
+    }
+
+    [Fact]
+    public async Task UpdateProductByIdAsync_UpdateNotExistingProduct_ReturnsNull()
+    {
+        // Arrange
+        var (dbContext, product, productService) = await CreateTestPreparations();
+        
+        var updateProductRequest = new UpdateProductRequest
+        {
+            Name = "Test Update",
+            Sku = "test-update",
+        };
+
+        //Act
+        var result = await productService.UpdateProductByIdAsync(2, updateProductRequest);
+
+        //Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task UpdateProductByIdAsync_UpdateInactiveProduct_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var (dbContext, product, productService) = await CreateTestPreparations();
+        await productService.DeleteProductByIdAsync(product.Id);
+        
+        var updateProductRequest = new UpdateProductRequest
+        {
+            Name = "Test Update",
+            Sku = "test-update",
+        };
+
+        //Act & Assert
+        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await productService.UpdateProductByIdAsync(product.Id, updateProductRequest);
+        });
+
+        Assert.Contains("Product inactive", ex.Message);
+    }
+
+    [Fact]
+    public async Task UpdateProductByIdAsync_UpdateProductToExistingSku_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var (dbContext, product, productService) = await CreateTestPreparations();
+
+        CreateProductRequest productRequest = new CreateProductRequest
+        {
+            Name = "Test Produkt 2",
+            Sku = "test-doubled-sku",
+        };
+
+        await productService.CreateNewProductAsync(productRequest);
+        
+        var updateProductRequest = new UpdateProductRequest
+        {
+            Name = "Test Update",
+            Sku = "test-doubled-sku",
+        };
+
+        //Act & Assert
+        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await productService.UpdateProductByIdAsync(product.Id, updateProductRequest);
+        });
+
+        Assert.Contains("Sku already exists", ex.Message);
     }
 
     private async Task<(InventoryDbContext dbContext, Product product, ProductService productService)> CreateTestPreparations()
