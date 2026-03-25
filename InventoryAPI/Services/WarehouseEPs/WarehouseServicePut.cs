@@ -17,7 +17,7 @@ public partial class WarehouseService
 
         if(warehouse.is_active == false) throw new InvalidOperationException("Warehouse inactive. No actions possible");
 
-        if(string.IsNullOrEmpty(warehouse.Name))
+        if(!string.IsNullOrEmpty(warehouseInput.Name))
         {
             //Check if new Sku already exists
             Warehouse? warehouseNameSearch = await _dbContext.Warehouses.FirstOrDefaultAsync(w => w.Name == warehouseInput.Name && w.Id != id);
@@ -25,7 +25,7 @@ public partial class WarehouseService
         }
 
         warehouse.Name = warehouseInput.Name == null ? warehouse.Name : warehouseInput.Name;
-        warehouse.Description = warehouse.Description == null ? warehouse.Description : warehouse.Description;
+        warehouse.Description = warehouseInput.Description == null ? warehouse.Description : warehouseInput.Description;
 
         await _dbContext.SaveChangesAsync();
         
