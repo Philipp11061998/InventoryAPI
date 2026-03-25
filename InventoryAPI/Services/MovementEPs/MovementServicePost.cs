@@ -2,7 +2,6 @@ using InventoryAPI.DTOs;
 using InventoryAPI.Models;
 using Microsoft.EntityFrameworkCore;
 using InventoryAPI.Common;
-using System.Linq;
 
 namespace InventoryAPI.Services;
 
@@ -23,16 +22,6 @@ public partial class MovementService
 
         if(errors.Count > 0) throw new InvalidOperationException(string.Join(". ", errors));
 
-        if(newMovement.MovementType == MovementType.Outbound)
-        {
-            var movements = await _dbContext.Movements.Where(m => m.ProductId == newMovement.ProductId && m.WarehouseId == newMovement.WarehouseId).ToListAsync();
-
-            int foundAmount = movements.Sum(m => m.MovementType == MovementType.Inbound ? m.Amount : -m.Amount);
-
-            if(foundAmount < newMovement.Amount) throw new InvalidOperationException($"ProductId {newMovement.ProductId} is only available {foundAmount} times");
-        }
-        
-
         var movement = new Movement
         {
             ProductId = newMovement.ProductId,
@@ -43,9 +32,29 @@ public partial class MovementService
             Note = newMovement.Note
         };
 
-        _dbContext.Movements.Add(movement);
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
 
-        await _dbContext.SaveChangesAsync();
+        try 
+        {
+            if(newMovement.MovementType == MovementType.Outbound)
+            {
+                var movements = await _dbContext.Movements.Where(m => m.ProductId == newMovement.ProductId && m.WarehouseId == newMovement.WarehouseId).ToListAsync();
+
+                int foundAmount = movements.Sum(m => m.MovementType == MovementType.Inbound ? m.Amount : -m.Amount);
+
+                if(foundAmount < newMovement.Amount) throw new InvalidOperationException($"ProductId {newMovement.ProductId} is only available {foundAmount} times");
+            }
+
+            _dbContext.Movements.Add(movement);
+
+            await _dbContext.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+        } catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
 
         return movement;
     }
