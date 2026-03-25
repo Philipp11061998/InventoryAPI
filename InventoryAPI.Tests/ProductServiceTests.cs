@@ -14,7 +14,7 @@ public class ProductServiceTests
     public async Task DeleteProductAsync_ProductAlreadyInactive_ThrowsInvalidOperationException()
     {
         // Arrange
-        var (dbContext, product, productService) = await CreateTestPreparations();
+        var (dbContext, product, productService, productResponse) = await CreateTestPreparations();
 
         // Act & Assert
         await productService.DeleteProductByIdAsync(product.Id); //Erstes Löschen um auf inaktiv zu setzen (keine eigene Datenbankaktion, sondern nutzen der bestehenden Infrastruktur)
@@ -32,7 +32,7 @@ public class ProductServiceTests
     public async Task DeleteProductAsync_ProductNotFound_ReturnNull()
     {
         // Arrange
-        var (dbContext, product, productService) = await CreateTestPreparations(); //Nur Nutzen um Service und DB aufzubauen
+        var (dbContext, product, productService, productResponse) = await CreateTestPreparations(); //Nur Nutzen um Service und DB aufzubauen
 
         // Act & Assert
         var result = await productService.DeleteProductByIdAsync(2); //Nicht vorhandene Id
@@ -45,7 +45,7 @@ public class ProductServiceTests
     public async Task DeleteProductByIdAsync_ActiveProduct_ReturnsResponseAndSetsIsActiveFalse()
     {
         // Arrange
-        var (dbContext, product, productService) = await CreateTestPreparations(); //Nur Nutzen um Service und DB aufzubauen
+        var (dbContext, product, productService, productResponse) = await CreateTestPreparations(); //Nur Nutzen um Service und DB aufzubauen
 
         // Act & Assert
         var result = await productService.DeleteProductByIdAsync(product.Id); //Nicht vorhandene Id
@@ -61,7 +61,35 @@ public class ProductServiceTests
 
     }
 
-    private async Task<(InventoryDbContext dbContext, Product product, ProductService productService)> CreateTestPreparations()
+    [Fact]
+    public async Task GetAllAsync_GetOnlyActiveProducts_ReturnsOnlyActiveProducts()
+    {
+        // Arrange
+        var (dbContext, product, productService, productResponse) = await CreateTestPreparations(); //Nur Nutzen um Service und DB aufzubauen
+        var newProduct = new CreateProductRequest
+        {
+            Name = "Test inaktiv",
+            Sku = "test-inactive"
+        };
+
+        var createdProduct = await productService.CreateNewProductAsync(newProduct);
+        await productService.DeleteProductByIdAsync(createdProduct.Id);
+
+        await dbContext.SaveChangesAsync();
+
+
+        // Act & Assert
+        var result = await productService.GetAllAsync(); //Nicht vorhandene Id
+
+        Assert.Single(result);
+        Assert.Equal(product.Id, result.First().Id);
+        Assert.Equal(product.Sku, result.First().Sku);
+        Assert.Equal(product.Name, result.First().Name);
+        Assert.Equal(product.Description, result.First().Description);
+        Assert.DoesNotContain(result, p => p.Id == createdProduct.Id);
+    }
+
+    private async Task<(InventoryDbContext dbContext, Product product, ProductService productService, ProductResponse? productResponse)> CreateTestPreparations()
     {
         var connection = new SqliteConnection("DataSource=:memory:");
         await connection.OpenAsync();
@@ -88,6 +116,8 @@ public class ProductServiceTests
 
         var productService = new ProductService(dbContext);
 
-        return (dbContext, product, productService);
+        ProductResponse? productResponse = await productService.GetProductByIdAsync(product.Id);
+
+        return (dbContext, product, productService, productResponse);
     }
 }
