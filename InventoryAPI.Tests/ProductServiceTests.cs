@@ -89,6 +89,49 @@ public class ProductServiceTests
         Assert.DoesNotContain(result, p => p.Id == createdProduct.Id);
     }
 
+    [Fact]
+    public async Task GetProductByIdAsync_ActiveProduct_ReturnsProductResponse()
+    {
+        // Arrange
+        var (dbContext, product, productService, productResponse) = await CreateTestPreparations();
+
+        // Act
+        var productByEndpoint = await productService.GetProductByIdAsync(product.Id);
+
+        // Assert
+        Assert.NotNull(productByEndpoint);
+        Assert.Equal(product.Id, productByEndpoint.Id);
+        Assert.Equal(product.Sku, productByEndpoint.Sku);
+        Assert.Equal(product.Name, productByEndpoint.Name);
+    }
+
+    [Fact]
+    public async Task GetProductByIdAsync_ProductDoesNotExist_ReturnsNull()
+    {
+        // Arrange
+        var (dbContext, product, productService, productResponse) = await CreateTestPreparations();
+
+        // Act
+        ProductResponse? productSearch = await productService.GetProductByIdAsync(2); //Produkt mit Id 2 kann nicht existieren
+
+        //Assert
+        Assert.Null(productSearch);
+    }
+
+    [Fact]
+    public async Task GetProductByIdAsync_InactiveProduct_ReturnsNull()
+    {
+        // Arrange
+        var (dbContext, product, productService, productResponse) = await CreateTestPreparations();
+        await productService.DeleteProductByIdAsync(product.Id);
+
+        // Act
+        ProductResponse? productSearch = await productService.GetProductByIdAsync(product.Id);
+
+        //Assert
+        Assert.Null(productSearch);
+    }
+
     private async Task<(InventoryDbContext dbContext, Product product, ProductService productService, ProductResponse? productResponse)> CreateTestPreparations()
     {
         var connection = new SqliteConnection("DataSource=:memory:");
