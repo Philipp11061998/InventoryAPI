@@ -1,4 +1,4 @@
-using InventoryAPI.Common;
+using System.Net.NetworkInformation;
 using InventoryAPI.Data;
 using InventoryAPI.DTOs;
 using InventoryAPI.Models;
@@ -14,7 +14,7 @@ public class ProductServiceTests
     public async Task DeleteProductAsync_ProductAlreadyInactive_ThrowsInvalidOperationException()
     {
         // Arrange
-        var (dbContext, product, productService, productResponse) = await CreateTestPreparations();
+        var (dbContext, product, productService) = await CreateTestPreparations();
 
         // Act & Assert
         await productService.DeleteProductByIdAsync(product.Id); //Erstes Löschen um auf inaktiv zu setzen (keine eigene Datenbankaktion, sondern nutzen der bestehenden Infrastruktur)
@@ -32,7 +32,7 @@ public class ProductServiceTests
     public async Task DeleteProductAsync_ProductNotFound_ReturnNull()
     {
         // Arrange
-        var (dbContext, product, productService, productResponse) = await CreateTestPreparations(); //Nur Nutzen um Service und DB aufzubauen
+        var (dbContext, product, productService) = await CreateTestPreparations(); //Nur Nutzen um Service und DB aufzubauen
 
         // Act & Assert
         var result = await productService.DeleteProductByIdAsync(2); //Nicht vorhandene Id
@@ -45,7 +45,7 @@ public class ProductServiceTests
     public async Task DeleteProductByIdAsync_ActiveProduct_ReturnsResponseAndSetsIsActiveFalse()
     {
         // Arrange
-        var (dbContext, product, productService, productResponse) = await CreateTestPreparations(); //Nur Nutzen um Service und DB aufzubauen
+        var (dbContext, product, productService) = await CreateTestPreparations(); //Nur Nutzen um Service und DB aufzubauen
 
         // Act & Assert
         var result = await productService.DeleteProductByIdAsync(product.Id); //Nicht vorhandene Id
@@ -65,7 +65,7 @@ public class ProductServiceTests
     public async Task GetAllAsync_GetOnlyActiveProducts_ReturnsOnlyActiveProducts()
     {
         // Arrange
-        var (dbContext, product, productService, productResponse) = await CreateTestPreparations(); //Nur Nutzen um Service und DB aufzubauen
+        var (dbContext, product, productService) = await CreateTestPreparations(); //Nur Nutzen um Service und DB aufzubauen
         var newProduct = new CreateProductRequest
         {
             Name = "Test inaktiv",
@@ -93,7 +93,7 @@ public class ProductServiceTests
     public async Task GetProductByIdAsync_ActiveProduct_ReturnsProductResponse()
     {
         // Arrange
-        var (dbContext, product, productService, productResponse) = await CreateTestPreparations();
+        var (dbContext, product, productService) = await CreateTestPreparations();
 
         // Act
         var productByEndpoint = await productService.GetProductByIdAsync(product.Id);
@@ -109,7 +109,7 @@ public class ProductServiceTests
     public async Task GetProductByIdAsync_ProductDoesNotExist_ReturnsNull()
     {
         // Arrange
-        var (dbContext, product, productService, productResponse) = await CreateTestPreparations();
+        var (dbContext, product, productService) = await CreateTestPreparations();
 
         // Act
         ProductResponse? productSearch = await productService.GetProductByIdAsync(2); //Produkt mit Id 2 kann nicht existieren
@@ -122,7 +122,7 @@ public class ProductServiceTests
     public async Task GetProductByIdAsync_InactiveProduct_ReturnsNull()
     {
         // Arrange
-        var (dbContext, product, productService, productResponse) = await CreateTestPreparations();
+        var (dbContext, product, productService) = await CreateTestPreparations();
         await productService.DeleteProductByIdAsync(product.Id);
 
         // Act
@@ -132,7 +132,53 @@ public class ProductServiceTests
         Assert.Null(productSearch);
     }
 
-    private async Task<(InventoryDbContext dbContext, Product product, ProductService productService, ProductResponse? productResponse)> CreateTestPreparations()
+    [Fact]
+    public async Task CreateNewProductAsync_SkuAlreadyExists_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var (dbContext, product, productService) = await CreateTestPreparations();
+
+        CreateProductRequest newProductRequest = new CreateProductRequest
+        {
+            Name = product.Name,
+            Sku = product.Sku  
+        };
+
+        // Act & Assert
+        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await productService.CreateNewProductAsync(newProductRequest);
+        });
+
+        Assert.Contains("Product with the same SKU already exists", ex.Message);
+
+    }
+
+    [Fact]
+    public async Task CreateNewProductAsync_ValidProduct_ReturnsCreatedProduct()
+    {
+        // Arrange
+        var (dbContext, product, productService) = await CreateTestPreparations();
+
+        CreateProductRequest newProductRequest = new CreateProductRequest
+        {
+            Name = "Test Produkt",
+            Sku = "test-sku"  
+        };
+
+        var productInsert = await productService.CreateNewProductAsync(newProductRequest);
+        var productDbCheck = dbContext.Products.FirstOrDefault(p => p.Id == productInsert.Id);
+
+        Assert.NotNull(productInsert);
+        Assert.NotNull(productDbCheck);
+        Assert.Equal(productInsert.Id, productDbCheck.Id);
+        Assert.Equal(newProductRequest.Name, productInsert.Name);
+        Assert.Equal(newProductRequest.Name, productDbCheck.Name);
+        Assert.Equal(newProductRequest.Sku, productInsert.Sku);
+        Assert.Equal(newProductRequest.Sku, productDbCheck.Sku);
+    }
+
+    private async Task<(InventoryDbContext dbContext, Product product, ProductService productService)> CreateTestPreparations()
     {
         var connection = new SqliteConnection("DataSource=:memory:");
         await connection.OpenAsync();
@@ -159,8 +205,6 @@ public class ProductServiceTests
 
         var productService = new ProductService(dbContext);
 
-        ProductResponse? productResponse = await productService.GetProductByIdAsync(product.Id);
-
-        return (dbContext, product, productService, productResponse);
+        return (dbContext, product, productService);
     }
 }
