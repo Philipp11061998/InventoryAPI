@@ -22,6 +22,10 @@ DROP TABLE IF EXISTS dbo.movements
 
 GO
 
+DROP TABLE IF EXISTS dbo.users
+
+GO
+
 CREATE TABLE dbo.products (
     Id INT IDENTITY(1,1) PRIMARY KEY,
     sku NVARCHAR(20) NOT NULL,
@@ -63,6 +67,27 @@ CREATE TABLE dbo.movements (
 );
 
 GO
+
+CREATE TABLE dbo.users (
+    Id INT IDENTITY(1,1) PRIMARY KEY, 
+    Username NVARCHAR(50) NOT NULL,
+    PasswordHash NVARCHAR(255) NOT NULL,
+    Role NVARCHAR(20) NOT NULL,
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE()
+);
+
+GO
+
+IF NOT EXISTS (SELECT 1 FROM dbo.users)
+    BEGIN
+        INSERT INTO dbo.users (Username, PasswordHash, Role)
+        VALUES
+        ('Admin', '$2a$11$V96dygkrH2.AI2DybHlwOurBZlL/J4aHKoXlEBcbsAiZs/UiFBmla', 'Admin'), --Passwort: Admin123!
+        ('User', '$2a$11$Hwx8Z.Twn93c0mnuCsaeN.k5M/3yL8RRXkA0yE5K9CfyuxHbDlMr6', 'User')   --Passwort: User123!
+    END
+
+GO
+
 -- Füge Beispielprodukte hinzu, wenn die Tabelle leer ist
 IF NOT EXISTS (SELECT 1 FROM dbo.products)
     BEGIN

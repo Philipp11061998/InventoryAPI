@@ -1,231 +1,193 @@
 # 📦 Inventory Management API
-Eine moderne REST API zur Verwaltung von Produkten, Lagern, Bestandsbewegungen und aggregierten Lagerbeständen.
+Eine moderne Portfolio-API zur Verwaltung von Produkten, Lagern, Bestandsbewegungen und aggregierten Inventardaten.
 
-Dieses Projekt wurde als Backend-Portfolio-Projekt entwickelt, um praxisnahe API-Entwicklung, Business-Logik, Datenbankintegration und eine saubere Projektstruktur mit .NET 8, Entity Framework Core, SQL Server und Docker zu demonstrieren.
+Dieses Projekt zeigt praxisnahe Backend-Entwicklung mit .NET 8, Entity Framework Core, SQL Server, Docker, Swagger und automatisierten Tests.
 
 [![.NET CI](https://github.com/Philipp11061998/InventoryAPI/actions/workflows/dotnet.yml/badge.svg)](https://github.com/Philipp11061998/InventoryAPI/actions/workflows/dotnet.yml)
 
 ---
 
-## 🧭 Überblick
+## 🧭 Übersicht
 
-Die Inventory Management API bildet einen realistischen Lager- und Bestandsverwaltungsprozess ab.
+Die Inventory Management API modelliert realistisches Lager- und Bestandsmanagement. Statt den Bestand als festen Wert zu speichern, wird er aus historischen Bewegungen berechnet.
 
-Anstatt einen statischen Lagerbestand pro Produkt zu speichern, wird der aktuelle Bestand aus historischen Bestandsbewegungen berechnet. Dadurch ist das System transparenter, flexibler und näher an realen Business-Szenarien.
+Das macht das System transparenter, auditfähiger und näher an echten Business-Prozessen.
 
-### Aktuell unterstützt das Projekt:
-- Produktverwaltung
-- Lagerverwaltung
+### Aktuelle Kernfunktionen
+- Produktverwaltung (Create / Read / Update / Soft Delete)
+- Lagerverwaltung (Create / Read / Update / Soft Delete)
 - Bestandsbewegungen (Inbound / Outbound)
 - Aggregierte Bestandsabfragen
-- Soft Delete für Produkte und Lager
-- Validierung zentraler Business-Regeln (z. B. kein negativer Bestand)
+- Tokenbasierte Authentifizierung mit JWT
+- Rollenbasierte Policies (`AdminOnly`, `User`)
+- Swagger UI mit Bearer-Token-Unterstützung
+- Zentrale Exception-Middleware
 
 ---
 
 ## 🛠 Tech Stack
-
 - .NET 8
 - ASP.NET Core Web API
 - Entity Framework Core
 - SQL Server (Docker)
 - Swagger / OpenAPI
-- xUnit + SQLite (InMemory) für Tests
+- xUnit + SQLite InMemory für Tests
 - C#
 
 ---
 
 ## 🏗 Architektur
-
-Das Projekt folgt einer klaren, servicebasierten Struktur:
-
-- Controller → HTTP Layer (Requests / Responses)
-- Services → Business-Logik
+Das Projekt ist serviceorientiert aufgebaut:
+- Controller → HTTP Layer
+- Services → Geschäftslogik
 - Data → EF Core DbContext
-- DTOs → Request- und Response-Modelle
-- Models → interne Domain- und Datenbankrepräsentation
+- DTOs → API-Anfragen und -Antworten
+- Models → Datenbank- und Domain-Objekte
 
 ### Datenfluss
-
 Controller → Service → DbContext → SQL Server
 
-### Response-DTOs
-
-Response-DTOs werden bewusst genutzt, um:
-- interne Datenstrukturen zu kapseln
-- API-Antworten stabil zu halten
-- Änderungen an der Datenbank vom Client zu entkoppeln
+### Warum DTOs?
+DTOs schützen interne Strukturen, halten API-Antworten stabil und trennen Datenbankmodell von API-Vertrag.
 
 ---
 
-## 🔑 Kernkonzepte
-
+## 🔑 Domänenlogik
 ### Produkte
-Produkte können erstellt, aktualisiert, abgefragt und per Soft Delete deaktiviert werden.
+- Anlegen
+- Aktualisieren
+- Abfragen
+- Soft Delete (statt physischem Löschen)
 
-### Lager (Warehouses)
-Repräsentieren physische Lagerorte.
+### Lager
+- Anlegen
+- Aktualisieren
+- Abfragen
+- Soft Delete
 
-### Bestandsbewegungen
-Bestände werden nicht direkt gespeichert, sondern über Bewegungen modelliert:
-
-- Inbound → erhöht Bestand
-- Outbound → reduziert Bestand
+### Bewegungen
+- Inbound erhöht Bestand
+- Outbound reduziert Bestand
+- Bestand wird nicht direkt gespeichert, sondern aus Bewegungen berechnet
 
 ### Bestandsaggregation
-Der aktuelle Bestand wird berechnet durch:
 - Gruppierung nach Produkt und Lager
-- Summierung aller Bewegungen (mit Vorzeichen)
+- Summierung aller Bewegungen
+- Echtzeit-Ermittlung des Bestands
 
 ---
 
-## ⚙️ Fehlerbehandlung & Logging
+## 🔐 Authentifizierung & Autorisierung
+### Login
+- Endpoint: `POST /api/auth/login`
+- Payload: `username`, `password`
+- Rückgabe: JWT als String
 
-- Zentrale Exception Middleware
+### JWT
+- Signiert mit einem Secret aus `appsettings.json`
+- Enthält Claims: `sub`, `name`, `role`, `jti`, `iat`
+- Gültig für 1 Stunde
+
+### Authorization
+- Rollen werden als Claim gespeichert
+- Policies:
+  - `AdminOnly`
+  - `User` (Admin + User)
+- Geschützte Controller nutzen `[Authorize]`
+
+### Swagger-Flow
+1. `/api/auth/login` aufrufen
+2. Token kopieren
+3. `Authorize` in Swagger öffnen
+4. `Bearer <token>` eingeben
+
+---
+
+## ⚙️ Fehlerbehandlung
+- Zentrale Exception-Middleware
 - Einheitliche JSON-Fehlerantworten
-- Controller enthalten keine try/catch-Blöcke
-- Business-Fehler werden auf passende HTTP-Statuscodes gemappt
-- Strukturierte Logs für Fehlerfälle
+- Business-Logik bleibt in Services
+- Controller bleiben schlank
 
 ---
 
 ## 🧪 Tests
+- xUnit als Testframework
+- SQLite InMemory für isolierte Tests
+- Fokus auf Service-Logik
 
-Das Projekt enthält automatisierte Tests für zentrale Business-Logik:
-
-- xUnit als Test-Framework
-- SQLite InMemory für isolierte Tests ohne echte Datenbank
-
-### Abgedeckte Szenarien:
-- Outbound ohne Bestand → Fehler
-- Inbound → erfolgreich
-- Inbound + Outbound → korrekter Restbestand
-
----
-
-## 🧪 Qualitätssicherung
-
-Die Business-Logik wird durch automatisierte Tests abgesichert.
-
-Dabei werden sowohl Fehlerfälle (z. B. Outbound ohne Bestand) als auch erfolgreiche Szenarien validiert.
-
-Die Tests laufen unabhängig von der produktiven Datenbank mithilfe von SQLite InMemory.
-
----
-
-## 📏 Business-Regeln
-
-- Produkte müssen existieren, bevor Bewegungen erstellt werden
-- Lager müssen existieren
-- Inaktive Produkte/Lager dürfen nicht verwendet werden
-- Amount muss größer als 0 sein
-- Outbound wird verhindert, wenn Bestand nicht ausreicht
-- Soft Delete statt physischem Löschen
-
----
-
-## 🧠 Design-Entscheidung: Bewegungsbasierter Bestand
-
-Der Bestand wird bewusst nicht direkt gespeichert, sondern aus Bewegungen berechnet.
-
-### Vorteile:
-- vollständige Nachvollziehbarkeit (Audit)
-- bessere Debugbarkeit
-- realitätsnahe Modellierung
-- einfache Erweiterbarkeit (Transfers, Reports, Alerts)
+### Abgedeckte Bereiche
+- Lagerverwaltung
+- Produktverwaltung
+- Bewegungslogik
+- Bestandsregeln
 
 ---
 
 ## 🗄 Datenbank
-
-- SQL Server läuft in Docker
-- Initialisierung über SQL-Skript
-
-Automatisch:
-- Erstellung der Datenbank
-- Erstellung der Tabellen
-- Seed-Daten
+- SQL Server im Docker-Container
+- Initialisierung über `database/init.sql`
+- ConnectionString konfigurierbar in `appsettings.json`
 
 ---
 
 ## 🚀 Lokales Setup
-
 ### Voraussetzungen
 - .NET 8 SDK
 - Docker
 
 ### Start
-
-1. SQL Server Container starten
-2. Init-Skript ausführen lassen
-3. API starten
-
-Swagger erreichbar unter:
-
-http://localhost:8080/swagger
+1. `docker compose up --build`
+2. Swagger öffnen: `http://localhost:8080/swagger`
 
 ---
 
-## 🔄 Beispiel-Workflow
-
-1. Produkt erstellen  
-2. Lager erstellen  
-3. Bestand hinzufügen (Inbound)  
-4. Bestand reduzieren (Outbound)  
-5. Inventory abfragen  
+## 🔄 Typischer Workflow
+1. `POST /api/auth/login`
+2. Bearer-Token in Swagger einfügen
+3. Produkt anlegen
+4. Lager anlegen
+5. Inbound-Bewegung anlegen
+6. Outbound-Bewegung anlegen
+7. Inventory-Übersicht abrufen
 
 ---
 
-## 🎯 Projektziele
-
-Dieses Projekt demonstriert praxisrelevante Backend-Skills:
-
+## 🎯 Projektziel
+Dieses Projekt demonstriert praxisrelevantes Backend-Know-how:
 - REST API Design
-- Service-basierte Architektur
-- Asynchrone Datenbankzugriffe
-- Business-Logik-Validierung
+- Tokenbasierte Authentifizierung
+- Rollenbasierte Autorisierung
+- Serviceorientierte Architektur
 - Relationale Datenmodellierung
-- LINQ & Aggregationen
 - Docker-basierte Entwicklung
-- Testgetriebene Absicherung von Logik
+- Automatisierte Tests
 
 ---
 
-## 🛣 Roadmap / Geplante Erweiterungen
+## 🛣 Roadmap
+### Bereits umgesetzt
+- Service-Schicht-Architektur ✅
+- EF Core + SQL Server ✅
+- Swagger ✅
+- Zentrale Fehlerbehandlung ✅
+- JWT-Login ✅
+- Rollenbasierte Policies ✅
+- Automatisierte Tests ✅
 
-- Response DTOs ✅  
-- Zentrale Exception Middleware ✅  
-- Automatisierte Tests ✅  
-- Authentifizierung  
-- Logging-Ausbau  
-- Erweiterte Business-Features  
-- Transfers zwischen Lagern  
-- Low-Stock Monitoring  
-
----
-
-## 🔐 Authentifizierung (geplant)
-
-Langfristig ist die Integration moderner Authentifizierungsmechanismen geplant (z. B. tokenbasiert oder cloudbasiert).
-
-Der Fokus liegt aktuell bewusst auf:
-- stabiler Business-Logik
-- sauberem Backend-Design
+### Nächste Schritte
+- User-Registrierung / User-Management
+- Logging / Observability
+- Integrationstests für Endpunkte
+- Transfer-Logik zwischen Lagern
+- Low-Stock Alerts / Monitoring
 
 ---
 
 ## 👨‍💻 Portfolio-Kontext
-
-Dieses Projekt ist Teil meines Backend-Portfolios und dient zur Vertiefung von:
-
-- .NET API Entwicklung
-- Backend-Architektur
-- Datenmodellierung
-- Service-orientiertem Design
-- realitätsnaher Business-Logik
+Dieses Projekt ist Teil meines Backend-Portfolios und zeigt, wie ich aus einer einfachen Datenbankanbindung ein durchdachtes API-System mit Auth und Geschäftslogik aufgebaut habe.
 
 ---
 
 ## ✍️ Autor
-
 Backend Portfolio Projekt von Philipp Joeris

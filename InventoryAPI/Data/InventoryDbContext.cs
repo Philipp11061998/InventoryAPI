@@ -13,4 +13,6 @@ public class InventoryDbContext : DbContext
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Warehouse> Warehouses => Set<Warehouse>();
     public DbSet<Movement> Movements => Set<Movement>();
+    public DbSet<User> Users => Set<User>();
+
 }
