@@ -55,13 +55,13 @@ public partial class AuthService
     {
         User? user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == login.Username);
 
-        if(user == null) throw new AuthenticationException("Bitte registriere dich!");
+        if(user == null) throw new AuthenticationException("Bitte registriere dich zuerst!");
 
         if(ValidatePasswordHash(login.Password, user.PasswordHash))
         {
             return GenerateJwtToken(user);
         }
-        else throw new AuthenticationException("Bitte registriere dich!");
+        else throw new AuthenticationException("Passwort falsch!");
 
     }
 

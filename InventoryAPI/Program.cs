@@ -7,6 +7,7 @@ using InventoryAPI.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace InventoryAPI;
 
@@ -24,7 +25,11 @@ public class Program
         // -> Wenn kein EF Core verwendet wird (veralteter Ansatz)
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
         
-        builder.Services.AddControllers();
+        builder.Services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>

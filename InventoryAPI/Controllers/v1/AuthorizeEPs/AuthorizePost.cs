@@ -9,14 +9,14 @@ namespace InventoryAPI.Controllers;
 public partial class AuthController
 {
     [HttpPost("register")]
-    public async Task<ActionResult> Login(
+    public async Task<ActionResult> Register(
         [FromBody, Required] Register register
     )
     {   
         UserToDisplay? result = await _authService.RegisterAsync(register);
             
         if(result != null) return CreatedAtAction(
-            nameof(UserController.GetUserById),
+            nameof(UsersController.GetUserById),
             "User",
             new {id = result.Id},
             result

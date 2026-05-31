@@ -8,6 +8,7 @@ namespace InventoryAPI.DTOs
         public string Username {get;}
         public string Role {get;}
         public DateTime CreatedAt {get;}
+        public bool IsActive {get;}
 
         public UserToDisplay(User user)
         {
@@ -15,6 +16,7 @@ namespace InventoryAPI.DTOs
             Username = user.Username;
             Role = user.Role;
             CreatedAt = user.CreatedAt;
+            IsActive = user.IsActive;
         }
     }
 }

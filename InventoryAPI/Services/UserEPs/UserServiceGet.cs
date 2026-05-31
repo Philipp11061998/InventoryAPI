@@ -1,6 +1,5 @@
+using InventoryAPI.Common;
 using InventoryAPI.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace InventoryAPI.Services;
@@ -17,5 +16,12 @@ public partial class UserService
     public async Task<User?> GetUserByIdAsync(int userId)
     {
         return await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+    }
+
+    public async Task<List<User>?> GetAllWithRoleFilterAsync(UserRoles role)
+    {
+        var users = _dbContext.Users.Where(u => u.Role == role.ToString()).ToList();;
+
+        return users;
     }
 }

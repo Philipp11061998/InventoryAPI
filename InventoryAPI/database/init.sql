@@ -10,15 +10,14 @@ GO
 
 --DROP um aktuelle Änderungen zu übernehmen, z.B. neue Spalten oder geänderte Datentypen
 --Durch das ausführen bei Dockerstart werden die Änderungen automatisch übernommen
+DROP TABLE IF EXISTS dbo.movements
+
+GO
 DROP TABLE IF EXISTS dbo.products
 
 GO
 
 DROP TABLE IF EXISTS dbo.warehouses
-
-GO
-
-DROP TABLE IF EXISTS dbo.movements
 
 GO
 
@@ -73,7 +72,8 @@ CREATE TABLE dbo.users (
     Username NVARCHAR(50) NOT NULL,
     PasswordHash NVARCHAR(255) NOT NULL,
     Role NVARCHAR(20) NOT NULL DEFAULT 'User',
-    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE()
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
+    IsActive BIT NOT NULL DEFAULT 1
 );
 
 GO
