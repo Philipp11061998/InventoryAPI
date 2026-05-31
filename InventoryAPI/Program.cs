@@ -69,6 +69,7 @@ public class Program
         builder.Services.AddScoped<WarehouseService>();
         builder.Services.AddScoped<MovementService>();
         builder.Services.AddScoped<InventoryService>();
+        builder.Services.AddScoped<UserService>();
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>

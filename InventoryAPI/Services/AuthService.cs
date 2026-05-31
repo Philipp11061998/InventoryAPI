@@ -6,6 +6,8 @@ using InventoryAPI.Models;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Authentication;
+using InventoryAPI.DTOs;
+using System.Text.Json;
 
 namespace InventoryAPI.Services;
 
@@ -24,13 +26,38 @@ public partial class AuthService
         _audience = audience;
     }
 
-    public async Task<string> LoginAsync(string username, string password)
+    public async Task<UserToDisplay?> RegisterAsync(Register register)
     {
-        User? user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == username);
+        if(await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == register.Username) != null)
+        {
+            return null;
+        } 
+
+        string passwordHash = GetPasswordHash(register.Password);
+
+        User newUser = new User
+        {
+            Username = register.Username,
+            PasswordHash = passwordHash
+        };
+
+        await _dbContext.Users.AddAsync(newUser);
+        await _dbContext.SaveChangesAsync();
+
+        var insertedUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == newUser.Username);
+
+        System.Console.WriteLine(JsonSerializer.Serialize(insertedUser));
+        return new UserToDisplay(insertedUser);
+
+    }
+
+    public async Task<string> LoginAsync(Login login)
+    {
+        User? user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == login.Username);
 
         if(user == null) throw new AuthenticationException("Bitte registriere dich!");
 
-        if(ValidatePasswordHash(password, user.PasswordHash))
+        if(ValidatePasswordHash(login.Password, user.PasswordHash))
         {
             return GenerateJwtToken(user);
         }
@@ -65,6 +92,11 @@ public partial class AuthService
 
         return new JwtSecurityTokenHandler().WriteToken(token);
 
+    }
+
+    public string GetPasswordHash(string password)
+    {
+        return BCrypt.Net.BCrypt.HashPassword(password);
     }
 
     private bool ValidatePasswordHash(string password, string passwordHash)

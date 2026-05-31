@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace InventoryAPI.Services;
 
-//Partial PUT Part
+//Partial DELETE Part
 public partial class WarehouseService
 {
     public async Task<WarehouseResponse?> DeleteWarehouseByIdAsync(int id)
