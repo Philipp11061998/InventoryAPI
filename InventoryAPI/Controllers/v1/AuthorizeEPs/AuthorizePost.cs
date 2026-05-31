@@ -17,7 +17,7 @@ public partial class AuthController
             
         if(result != null) return CreatedAtAction(
             nameof(UsersController.GetUserById),
-            "User",
+            "Users",
             new {id = result.Id},
             result
         ); 

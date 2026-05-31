@@ -18,7 +18,7 @@ public partial class UserService
         return await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
     }
 
-    public async Task<List<User>?> GetAllWithRoleFilterAsync(UserRoles role)
+    public async Task<List<User>> GetAllWithRoleFilterAsync(UserRoles role)
     {
         var users = _dbContext.Users.Where(u => u.Role == role.ToString()).ToList();;
 

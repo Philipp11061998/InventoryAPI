@@ -175,7 +175,7 @@ Dieses Projekt demonstriert praxisrelevantes Backend-Know-how:
 - Rollenbasierte Policies ✅
 - Automatisierte Tests ✅
 - User-Registrierung ✅
-- User-Management (Admin only)
+- User-Management (Admin only) ✅
 
 ### Nächste Schritte
 - Logging / Observability
