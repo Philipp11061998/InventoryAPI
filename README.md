@@ -174,9 +174,10 @@ Dieses Projekt demonstriert praxisrelevantes Backend-Know-how:
 - JWT-Login ✅
 - Rollenbasierte Policies ✅
 - Automatisierte Tests ✅
+- User-Registrierung ✅
 
 ### Nächste Schritte
-- User-Registrierung / User-Management
+- User-Management (Admin only)
 - Logging / Observability
 - Integrationstests für Endpunkte
 - Transfer-Logik zwischen Lagern
