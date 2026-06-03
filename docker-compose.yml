@@ -1,10 +1,8 @@
-# Convenience file: Use "docker-compose up" from root or this directory
-# This file references the root Dockerfile
 services:
   api:
     build:
-      context: ..
-      dockerfile: ./Dockerfile
+      context: ./InventoryAPI
+      dockerfile: ../Dockerfile
     container_name: inventory_api
     ports:
       - "127.0.0.1:8080:8080"
@@ -32,7 +30,7 @@ services:
     depends_on:
       - sqlserver
     volumes:
-      - ./database/init.sql:/init.sql
+      - ./InventoryAPI/database/init.sql:/init.sql
     entrypoint: >
       /bin/bash -c "
       sleep 20 &&

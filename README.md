@@ -133,12 +133,18 @@ DTOs schützen interne Strukturen, halten API-Antworten stabil und trennen Daten
 
 ## 🚀 Lokales Setup
 ### Voraussetzungen
-- .NET 8 SDK
-- Docker
+- Docker & Docker Compose
 
 ### Start
-1. `docker compose up --build`
-2. Swagger öffnen: `http://localhost:8080/swagger`
+```bash
+# Aus dem Root-Verzeichnis des Projekts:
+docker-compose down && docker-compose up --build
+```
+
+Die API wird dann verfügbar unter: `http://localhost:8080/`
+Swagger UI: `http://localhost:8080/swagger`
+
+**Hinweis**: Das erste Hochfahren dauert ~30 Sekunden (SQL Server Initialisierung)
 
 ---
 
