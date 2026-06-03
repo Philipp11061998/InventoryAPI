@@ -21,7 +21,7 @@ public partial class WarehouseService
             Id = warehouse.Id,
             Name = warehouse.Name,
             Description = warehouse.Description,
-            CreatedAt = warehouse.created_at
+            CreatedAt = warehouse.CreatedAt
         };
     }
 }

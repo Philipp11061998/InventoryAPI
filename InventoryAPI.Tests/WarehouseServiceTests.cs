@@ -51,11 +51,11 @@ public class WarehouseServiceTests
         var warehouseSearch = await dbContext.Warehouses.FirstOrDefaultAsync(w => w.Id == warehouse.Id);
 
         Assert.NotNull(result);
-        Assert.False(warehouseSearch?.is_active);
+        Assert.False(warehouseSearch?.IsActive);
         Assert.Equal(warehouse.Id, result.Id);
         Assert.Equal(warehouse.Name, result.Name);
         Assert.Equal(warehouse.Description, result.Description);
-        Assert.Equal(warehouse.created_at, result.CreatedAt);
+        Assert.Equal(warehouse.CreatedAt, result.CreatedAt);
 
     }
 
@@ -299,7 +299,7 @@ public class WarehouseServiceTests
         {
             Name = "Test Warehouse",
             Description = null,
-            is_active = true
+            IsActive = true
         };
 
         dbContext.Warehouses.Add(warehouse);

@@ -15,7 +15,7 @@ public partial class WarehouseService
 
         if(warehouse == null) return null;
 
-        if(warehouse.is_active == false) throw new InvalidOperationException("Warehouse inactive. No actions possible");
+        if(warehouse.IsActive == false) throw new InvalidOperationException("Warehouse inactive. No actions possible");
 
         if(!string.IsNullOrEmpty(warehouseInput.Name))
         {

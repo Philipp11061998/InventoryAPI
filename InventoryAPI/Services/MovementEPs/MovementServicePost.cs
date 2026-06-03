@@ -12,8 +12,8 @@ public partial class MovementService
     {
         if(newMovement.Amount <= 0) throw new InvalidOperationException("Amount can't be lower or equal Zero");
 
-        Product? product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == newMovement.ProductId && p.is_active);
-        Warehouse? warehouse = await _dbContext.Warehouses.FirstOrDefaultAsync(w => w.Id == newMovement.WarehouseId && w.is_active);
+        Product? product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == newMovement.ProductId && p.IsActive);
+        Warehouse? warehouse = await _dbContext.Warehouses.FirstOrDefaultAsync(w => w.Id == newMovement.WarehouseId && w.IsActive);
         
         List<string> errors = new List<string>();
 

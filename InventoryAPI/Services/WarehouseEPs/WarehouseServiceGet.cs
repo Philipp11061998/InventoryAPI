@@ -10,20 +10,20 @@ public partial class WarehouseService
 
     public async Task<List<WarehouseResponse>> GetAllAsync()
     {
-        return await _dbContext.Warehouses.Where(w => w.is_active)
+        return await _dbContext.Warehouses.Where(w => w.IsActive)
             .Select(w => new WarehouseResponse
             {
                 Id = w.Id,
                 Name = w.Name,
                 Description = w.Description,
-                CreatedAt = w.created_at
+                CreatedAt = w.CreatedAt
             })
             .ToListAsync();
     }
 
     public async Task<WarehouseResponse?> GetWarehouseByIdAsync(int id)
     {
-        Warehouse? warehouse = await _dbContext.Warehouses.FirstOrDefaultAsync(w => w.Id == id && w.is_active);
+        Warehouse? warehouse = await _dbContext.Warehouses.FirstOrDefaultAsync(w => w.Id == id && w.IsActive);
         
         return warehouse == null ? null : MapToWarehouseResponse(warehouse);
     }

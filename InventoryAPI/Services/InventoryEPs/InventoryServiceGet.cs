@@ -16,7 +16,7 @@ public partial class InventoryService
             on movement.ProductId equals product.Id
             join warehouse in _dbContext.Warehouses
             on movement.WarehouseId equals warehouse.Id
-            where product.is_active && warehouse.is_active
+            where product.IsActive && warehouse.IsActive
             && (productId == null ? true : product.Id == productId)
             && (warehouseId == null ? true : warehouse.Id == warehouseId)
             select new

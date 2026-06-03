@@ -13,9 +13,9 @@ public partial class ProductService
 
         if(product == null) return null;
 
-        if(product.is_active == false) throw new InvalidOperationException("Product already inactive");
+        if(product.IsActive == false) throw new InvalidOperationException("Product already inactive");
 
-        product.is_active = false;
+        product.IsActive = false;
 
         await _dbContext.SaveChangesAsync();
         

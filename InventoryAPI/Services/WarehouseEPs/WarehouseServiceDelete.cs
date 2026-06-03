@@ -13,9 +13,9 @@ public partial class WarehouseService
 
         if(warehouse == null) return null;
 
-        if(warehouse.is_active == false) throw new InvalidOperationException("Warehouse already inactive");
+        if(warehouse.IsActive == false) throw new InvalidOperationException("Warehouse already inactive");
 
-        warehouse.is_active = false;
+        warehouse.IsActive = false;
 
         await _dbContext.SaveChangesAsync();
         

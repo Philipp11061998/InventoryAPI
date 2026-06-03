@@ -42,14 +42,14 @@ public class InventoryServiceTests
         {
             Name = "Test Warehouse",
             Description = null,
-            is_active = true
+            IsActive = true
         };
 
         var product = new Product
         {
             Name = "Test Produkt",
             Sku = "test-produkt",
-            is_active = true
+            IsActive = true
         };
 
         dbContext.Warehouses.Add(warehouse);

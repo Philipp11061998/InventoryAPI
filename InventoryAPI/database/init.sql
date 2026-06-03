@@ -30,8 +30,8 @@ CREATE TABLE dbo.products (
     sku NVARCHAR(20) NOT NULL,
     name NVARCHAR(50) NOT NULL,
     description NVARCHAR(100) NULL,
-    is_active BIT NOT NULL DEFAULT 1,
-    created_at DATETIME2 NOT NULL DEFAULT GETDATE()
+    IsActive BIT NOT NULL DEFAULT 1,
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE()
 );
 
 GO
@@ -40,8 +40,8 @@ CREATE TABLE dbo.warehouses (
     Id INT IDENTITY(1,1) PRIMARY KEY, 
     [Name] NVARCHAR(50) NOT NULL,
     [Description] NVARCHAR(100) NOT NULL,
-    is_active BIT NOT NULL DEFAULT 1,
-    created_at DATETIME2 NOT NULL DEFAULT GETDATE()
+    IsActive BIT NOT NULL DEFAULT 1,
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE()
 );
 
 GO
@@ -54,7 +54,7 @@ CREATE TABLE dbo.movements (
     MovementType INT NOT NULL,
     TransferReference NVARCHAR(100) NULL,
     Note NVARCHAR(100) NULL,
-    created_at DATETIME2 NOT NULL DEFAULT GETDATE(),
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     CONSTRAINT FK_movements_productId FOREIGN KEY(ProductId)
         REFERENCES dbo.products(Id)
         ON UPDATE NO ACTION

@@ -51,12 +51,12 @@ public class ProductServiceTests
         var productSearch = await dbContext.Products.FirstOrDefaultAsync(p => p.Id == product.Id);
 
         Assert.NotNull(result);
-        Assert.False(productSearch?.is_active);
+        Assert.False(productSearch?.IsActive);
         Assert.Equal(product.Id, result.Id);
         Assert.Equal(product.Sku, result.Sku);
         Assert.Equal(product.Name, result.Name);
         Assert.Equal(product.Description, result.Description);
-        Assert.Equal(product.created_at, result.CreatedAt);
+        Assert.Equal(product.CreatedAt, result.CreatedAt);
 
     }
 
@@ -316,7 +316,7 @@ public class ProductServiceTests
             Sku = "test-product",
             Name = "Test Produkt",
             Description = null,
-            is_active = true
+            IsActive = true
         };
 
         dbContext.Products.Add(product);

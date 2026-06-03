@@ -11,5 +11,5 @@ public class Movement
     public MovementType MovementType { get; set; }
     public string? TransferReference { get; set; }
     public string? Note { get; set; }
-    public DateTime created_at { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

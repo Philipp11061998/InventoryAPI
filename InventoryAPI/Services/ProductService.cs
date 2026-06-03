@@ -22,7 +22,7 @@ public partial class ProductService
             Sku = product.Sku,
             Name = product.Name,
             Description = product.Description,
-            CreatedAt = product.created_at
+            CreatedAt = product.CreatedAt
         };
     }
 }

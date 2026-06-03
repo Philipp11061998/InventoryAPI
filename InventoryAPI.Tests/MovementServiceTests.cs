@@ -189,7 +189,7 @@ public class MovementServiceTests
             Sku = "test-product",
             Name = "Test Produkt",
             Description = null,
-            is_active = true
+            IsActive = true
         };
 
         dbContext.Products.Add(product);
@@ -198,7 +198,7 @@ public class MovementServiceTests
         {
             Name = "Test Warehouse",
             Description = null,
-            is_active = true
+            IsActive = true
         };
 
         dbContext.Warehouses.Add(warehouse);
@@ -267,7 +267,7 @@ public class MovementServiceTests
             Sku = "test-product",
             Name = "Test Produkt",
             Description = null,
-            is_active = true
+            IsActive = true
         };
 
         dbContext.Products.Add(product);
@@ -276,7 +276,7 @@ public class MovementServiceTests
         {
             Name = "Test Warehouse",
             Description = null,
-            is_active = true
+            IsActive = true
         };
 
         dbContext.Warehouses.Add(warehouse);
