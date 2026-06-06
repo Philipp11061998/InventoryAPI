@@ -26,9 +26,5 @@ jobs:
       run: dotnet build --no-restore
 
     - name: Run tests
-<<<<<<< HEAD
       run: dotnet test --no-build --filter "Category!=Integration"
 
-=======
-      run: dotnet test --no-build --filter "Category!=Integration"
->>>>>>> 7c20a4b (IntegrationTests aus CI entfernt)
