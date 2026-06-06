@@ -116,11 +116,37 @@ DTOs schützen interne Strukturen, halten API-Antworten stabil und trennen Daten
 - SQLite InMemory für isolierte Tests
 - Fokus auf Service-Logik
 
+### Unit Tests
+
+```bash
+dotnet test
+```
+
+### Integration Tests (noch in der Entwicklung)
+
+> Die `appsettings.Testing.json` enthält keine echten Secrets
+> und ist bewusst im Repository enthalten.
+
+```bash
+# 1. DB starten
+docker-compose up -d sqlserver dbInit
+
+# ~25 Sekunden warten, damit dbInit durch ist
+
+# 2. Tests ausführen
+dotnet test
+
+# 3. Optional: Docker stoppen
+docker-compose down
+```
+
 ### Abgedeckte Bereiche
 - Lagerverwaltung
 - Produktverwaltung
 - Bewegungslogik
 - Bestandsregeln
+- Authentifizierung
+- User
 
 ---
 

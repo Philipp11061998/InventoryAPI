@@ -6,7 +6,7 @@ using InventoryAPI.Common;
 using InventoryAPI.Services;
 using Microsoft.AspNetCore.Builder;
 
-namespace InventoryAPI.Tests;
+namespace InventoryAPI.Tests.UnitTests;
 
 public class InventoryServiceTests
 {

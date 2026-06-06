@@ -10,7 +10,7 @@ public partial class UserService
 
     public async Task<List<User>> GetAllUsersAsync()
     {
-        return _dbContext.Users.ToList();
+        return await _dbContext.Users.ToListAsync();
     }
 
     public async Task<User?> GetUserByIdAsync(int userId)
@@ -20,7 +20,7 @@ public partial class UserService
 
     public async Task<List<User>> GetAllWithRoleFilterAsync(UserRoles role)
     {
-        var users = _dbContext.Users.Where(u => u.Role == role.ToString()).ToList();;
+        var users = await _dbContext.Users.Where(u => u.Role == role.ToString()).ToListAsync();;
 
         return users;
     }

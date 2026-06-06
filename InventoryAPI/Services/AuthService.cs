@@ -46,7 +46,7 @@ public partial class AuthService
 
         var insertedUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == newUser.Username);
 
-        return new UserToDisplay(insertedUser);
+        return insertedUser != null ? new UserToDisplay(insertedUser) : null;
 
     }
 

@@ -9,7 +9,7 @@ using InventoryAPI.Services;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
-namespace InventoryAPI.Tests;
+namespace InventoryAPI.Tests.UnitTests;
 
 public class AuthServiceTests
 {
