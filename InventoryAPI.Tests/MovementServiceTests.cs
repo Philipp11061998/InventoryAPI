@@ -3,7 +3,7 @@ using InventoryAPI.Data;
 using InventoryAPI.DTOs;
 using InventoryAPI.Models;
 using InventoryAPI.Services;
-using Microsoft.AspNetCore.Authorization;
+using InventoryAPI.Exceptions;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,7 +12,7 @@ namespace InventoryAPI.Tests;
 public class MovementServiceTests
 {
     [Fact]
-    public async Task CreateNewMovementAsync_ProductDoesNotExist_ThrowsInvalidOperationException()
+    public async Task CreateNewMovementAsync_ProductDoesNotExist_ThrowsValidationException()
     {
         // Arrange
         var (dbContext, product, warehouse, movementService) = await CreateTestPreparations();
@@ -22,17 +22,18 @@ public class MovementServiceTests
         newMovement.ProductId = 2;
 
         // Act & Assert
-        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        ValidationException ex = await Assert.ThrowsAsync<ValidationException>(async () =>
         {
             await movementService.CreateNewMovementAsync(newMovement);
         });
 
-        Assert.Contains("Product doesn't exist", ex.Message);
+        Assert.Single(ex.Errors);
+        Assert.Contains(DomainException.ProductNotFoundException.ERROR_MESSAGE, ex.Errors[0].Message);
 
     }
 
     [Fact]
-    public async Task CreateNewMovementAsync_WarehouseDoesNotExist_ThrowsInvalidOperationException()
+    public async Task CreateNewMovementAsync_WarehouseDoesNotExist_ThrowsValidationException()
     {
         // Arrange
         var (dbContext, product, warehouse, movementService) = await CreateTestPreparations();
@@ -42,16 +43,17 @@ public class MovementServiceTests
         newMovement.WarehouseId = 2;
 
         // Act & Assert
-        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        ValidationException ex = await Assert.ThrowsAsync<ValidationException>(async () =>
         {
             await movementService.CreateNewMovementAsync(newMovement);
         });
 
-        Assert.Contains("Warehouse doesn't exist", ex.Message);
+        Assert.Single(ex.Errors);
+        Assert.Contains(DomainException.WarehouseNotFoundException.ERROR_MESSAGE, ex.Errors[0].Message);
     }
 
     [Fact]
-    public async Task CreateNewMovementAsync_WarehouseAndProductDoesNotExist_ThrowsInvalidOperationException()
+    public async Task CreateNewMovementAsync_WarehouseAndProductDoesNotExist_ThrowsValidationException()
     {
         // Arrange
         var (dbContext, product, warehouse, movementService) = await CreateTestPreparations();
@@ -62,36 +64,18 @@ public class MovementServiceTests
         newMovement.ProductId = 2;
 
         // Act & Assert
-        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        ValidationException ex = await Assert.ThrowsAsync<ValidationException>(async () =>
         {
             await movementService.CreateNewMovementAsync(newMovement);
         });
 
-        Assert.Contains("Product doesn't exist", ex.Message);
-        Assert.Contains("Warehouse doesn't exist", ex.Message);
+        Assert.True(ex.Errors.Count == 2);
+        Assert.Contains(DomainException.ProductNotFoundException.ERROR_MESSAGE, ex.Errors[0].Message);
+        Assert.Contains(DomainException.WarehouseNotFoundException.ERROR_MESSAGE, ex.Errors[1].Message);
     }
 
     [Fact]
-    public async Task CreateNewMovementAsync_AmountSmallerOrEqualZeo_ThrowsInvalidOperationException()
-    {
-        // Arrange
-        var (dbContext, product, warehouse, movementService) = await CreateTestPreparations();
-
-        var newMovement = CreateValidMovementRequest(product, warehouse);
-
-        newMovement.Amount = -1;
-
-        // Act & Assert
-        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-        {
-            await movementService.CreateNewMovementAsync(newMovement);
-        });
-
-        Assert.Contains("Amount can't be lower or equal Zero", ex.Message);
-    }
-
-    [Fact]
-    public async Task CreateNewMovementAsync_ProductIsOutOfStock_ThrowsInvalidOperationException()
+    public async Task CreateNewMovementAsync_ProductIsOutOfStock_ThrowsInsufficientStockException()
     {
         // Arrange
         var (dbContext, product, warehouse, movementService) = await CreateTestPreparations();
@@ -101,12 +85,12 @@ public class MovementServiceTests
         newMovement.MovementType = MovementType.Outbound;
 
         // Act & Assert
-        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        DomainException.InsufficientStockException ex = await Assert.ThrowsAsync<DomainException.InsufficientStockException>(async () =>
         {
             await movementService.CreateNewMovementAsync(newMovement);
         });
 
-        Assert.Contains("is only available", ex.Message);
+        Assert.Contains($"Insufficient stock for product {newMovement.ProductId} in warehouse {newMovement.WarehouseId}", ex.Message);
     }
 
     [Fact]
@@ -225,7 +209,7 @@ public class MovementServiceTests
         newOutboundMovement2.MovementType = MovementType.Outbound;
 
         // Act
-        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        DomainException.InsufficientStockException ex = await Assert.ThrowsAsync<DomainException.InsufficientStockException>(async () =>
         {
             await Task.WhenAll(
                 movementService.CreateNewMovementAsync(newOutboundMovement),
@@ -244,7 +228,7 @@ public class MovementServiceTests
         var inventory = await inventoryService.GetFullInventoryAsync(product.Id, warehouse.Id);
 
         // Assert
-        Assert.Contains("is only available", ex.Message);
+        Assert.Contains($"Insufficient stock for product {newOutboundMovement2.ProductId} in warehouse {newOutboundMovement2.WarehouseId}", ex.Message);
         Assert.Single(outboundMovements);
         Assert.Equal(newInboundMovement.Amount - newOutboundMovement.Amount, inventory.First().Amount); //Hier sicher, weil beide Requests den selben Amount haben
     }

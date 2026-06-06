@@ -2,6 +2,7 @@ using InventoryAPI.DTOs;
 using InventoryAPI.Models;
 using Microsoft.EntityFrameworkCore;
 using InventoryAPI.Common;
+using InventoryAPI.Exceptions;
 
 namespace InventoryAPI.Services;
 
@@ -10,17 +11,21 @@ public partial class MovementService
 {
     public async Task<Movement> CreateNewMovementAsync(CreateMovementRequest newMovement)
     {
-        if(newMovement.Amount <= 0) throw new InvalidOperationException("Amount can't be lower or equal Zero");
-
         Product? product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == newMovement.ProductId && p.IsActive);
         Warehouse? warehouse = await _dbContext.Warehouses.FirstOrDefaultAsync(w => w.Id == newMovement.WarehouseId && w.IsActive);
         
-        List<string> errors = new List<string>();
+        List<ValidationError> errors = new List<ValidationError>();
 
-        if(product == null) errors.Add("Product doesn't exist");
-        if(warehouse == null) errors.Add("Warehouse doesn't exist");
+        if(product == null) errors.Add(new ValidationError(
+            DomainException.ProductNotFoundException.ERROR_CODE, 
+            DomainException.ProductNotFoundException.ERROR_MESSAGE));
 
-        if(errors.Count > 0) throw new InvalidOperationException(string.Join(". ", errors));
+        if(warehouse == null) errors.Add(new ValidationError(
+            DomainException.WarehouseNotFoundException.ERROR_CODE,
+            DomainException.WarehouseNotFoundException.ERROR_MESSAGE
+        ));
+
+        if(errors.Count > 0) throw new ValidationException(errors);
 
         var movement = new Movement
         {
@@ -42,7 +47,7 @@ public partial class MovementService
 
                 int foundAmount = movements.Sum(m => m.MovementType == MovementType.Inbound ? m.Amount : -m.Amount);
 
-                if(foundAmount < newMovement.Amount) throw new InvalidOperationException($"ProductId {newMovement.ProductId} is only available {foundAmount} times");
+                if(foundAmount < newMovement.Amount) throw new DomainException.InsufficientStockException(newMovement.ProductId, newMovement.WarehouseId);
             }
 
             _dbContext.Movements.Add(movement);

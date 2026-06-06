@@ -1,5 +1,6 @@
 using InventoryAPI.Data;
 using InventoryAPI.DTOs;
+using InventoryAPI.Exceptions;
 using InventoryAPI.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -19,7 +20,7 @@ public partial class WarehouseService
 
         if(await _dbContext.Warehouses.AnyAsync(w => w.Name == warehouse.Name))
         {
-            throw new InvalidOperationException("Warehouse with the same Name already exists.");
+            throw new DomainException.WarehouseAlreadyExistsException(warehouse.Name);
         }
 
         _dbContext.Warehouses.Add(warehouse);

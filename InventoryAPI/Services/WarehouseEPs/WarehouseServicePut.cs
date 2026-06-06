@@ -1,6 +1,7 @@
 using InventoryAPI.Models;
 using InventoryAPI.DTOs;
 using Microsoft.EntityFrameworkCore;
+using InventoryAPI.Exceptions;
 
 namespace InventoryAPI.Services;
 
@@ -15,13 +16,13 @@ public partial class WarehouseService
 
         if(warehouse == null) return null;
 
-        if(warehouse.IsActive == false) throw new InvalidOperationException("Warehouse inactive. No actions possible");
+        if(warehouse.IsActive == false) throw new DomainException.WarehouseInactiveException();
 
         if(!string.IsNullOrEmpty(warehouseInput.Name))
         {
-            //Check if new Sku already exists
+            //Check if new Name already exists
             Warehouse? warehouseNameSearch = await _dbContext.Warehouses.FirstOrDefaultAsync(w => w.Name == warehouseInput.Name && w.Id != id);
-            if(warehouseNameSearch != null) throw new InvalidOperationException("Name already exists. No change possible");
+            if(warehouseNameSearch != null) throw new DomainException.WarehouseAlreadyExistsException(warehouseInput.Name);
         }
 
         warehouse.Name = warehouseInput.Name == null ? warehouse.Name : warehouseInput.Name;

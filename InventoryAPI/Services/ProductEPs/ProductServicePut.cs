@@ -1,6 +1,7 @@
 using InventoryAPI.Models;
 using InventoryAPI.DTOs;
 using Microsoft.EntityFrameworkCore;
+using InventoryAPI.Exceptions;
 
 namespace InventoryAPI.Services;
 
@@ -15,13 +16,13 @@ public partial class ProductService
 
         if(product == null) return null;
 
-        if(product.IsActive == false) throw new InvalidOperationException("Product inactive. No actions possible");
+        if(product.IsActive == false) throw new DomainException.ProductInactiveException();
 
         if(!string.IsNullOrEmpty(productInput.Sku))
         {
             //Check if new Sku already exists
             Product? productSkuSearch = await _dbContext.Products.FirstOrDefaultAsync(p => p.Sku == productInput.Sku && p.Id != id);
-            if(productSkuSearch != null) throw new InvalidOperationException("Sku already exists. No change possible");
+            if(productSkuSearch != null) throw new DomainException.ProductAlreadyExistsException(productInput.Sku);
         }
 
         product.Name = productInput.Name == null ? product.Name : productInput.Name;

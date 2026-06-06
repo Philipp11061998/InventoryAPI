@@ -1,4 +1,5 @@
 using InventoryAPI.DTOs;
+using InventoryAPI.Exceptions;
 using InventoryAPI.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,7 +19,7 @@ public partial class ProductService
 
         if(await _dbContext.Products.AnyAsync(p => p.Sku == product.Sku))
         {
-            throw new InvalidOperationException("Product with the same SKU already exists.");
+            throw new DomainException.ProductAlreadyExistsException(newProduct.Sku);
         }
 
         _dbContext.Products.Add(product);

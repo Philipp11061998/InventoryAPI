@@ -1,5 +1,6 @@
 using InventoryAPI.Data;
 using InventoryAPI.DTOs;
+using InventoryAPI.Exceptions;
 using InventoryAPI.Models;
 using InventoryAPI.Services;
 using Microsoft.Data.Sqlite;
@@ -10,7 +11,7 @@ namespace InventoryAPI.Tests;
 public class ProductServiceTests
 {
     [Fact]
-    public async Task DeleteProductAsync_ProductAlreadyInactive_ThrowsInvalidOperationException()
+    public async Task DeleteProductAsync_ProductAlreadyInactive_ThrowsProductInactiveException()
     {
         // Arrange
         var (dbContext, product, productService) = await CreateTestPreparations();
@@ -18,12 +19,12 @@ public class ProductServiceTests
         // Act & Assert
         await productService.DeleteProductByIdAsync(product.Id); //Erstes Löschen um auf inaktiv zu setzen (keine eigene Datenbankaktion, sondern nutzen der bestehenden Infrastruktur)
 
-        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        DomainException.ProductInactiveException ex = await Assert.ThrowsAsync<DomainException.ProductInactiveException>(async () =>
         {
             await productService.DeleteProductByIdAsync(product.Id);
         }); //Zweite Löschung wirft dann die Exception
 
-        Assert.Contains("Product already inactive", ex.Message);
+        Assert.Contains(DomainException.ProductInactiveException.ERROR_MESSAGE, ex.Message);
 
     }
 
@@ -132,7 +133,7 @@ public class ProductServiceTests
     }
 
     [Fact]
-    public async Task CreateNewProductAsync_SkuAlreadyExists_ThrowsInvalidOperationException()
+    public async Task CreateNewProductAsync_SkuAlreadyExists_ThrowsProductAlreadyExistsException()
     {
         // Arrange
         var (dbContext, product, productService) = await CreateTestPreparations();
@@ -144,12 +145,12 @@ public class ProductServiceTests
         };
 
         // Act & Assert
-        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        DomainException.ProductAlreadyExistsException ex = await Assert.ThrowsAsync<DomainException.ProductAlreadyExistsException>(async () =>
         {
             await productService.CreateNewProductAsync(newProductRequest);
         });
 
-        Assert.Contains("Product with the same SKU already exists", ex.Message);
+        Assert.Contains($"Product with SKU '{newProductRequest.Sku}' already exists", ex.Message);
 
     }
 
@@ -248,7 +249,7 @@ public class ProductServiceTests
     }
 
     [Fact]
-    public async Task UpdateProductByIdAsync_UpdateInactiveProduct_ThrowsInvalidOperationException()
+    public async Task UpdateProductByIdAsync_UpdateInactiveProduct_ThrowsProductInactiveException()
     {
         // Arrange
         var (dbContext, product, productService) = await CreateTestPreparations();
@@ -261,16 +262,16 @@ public class ProductServiceTests
         };
 
         //Act & Assert
-        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        DomainException.ProductInactiveException ex = await Assert.ThrowsAsync<DomainException.ProductInactiveException>(async () =>
         {
             await productService.UpdateProductByIdAsync(product.Id, updateProductRequest);
         });
 
-        Assert.Contains("Product inactive", ex.Message);
+        Assert.Contains(DomainException.ProductInactiveException.ERROR_MESSAGE, ex.Message);
     }
 
     [Fact]
-    public async Task UpdateProductByIdAsync_UpdateProductToExistingSku_ThrowsInvalidOperationException()
+    public async Task UpdateProductByIdAsync_UpdateProductToExistingSku_ThrowsProductAlreadyExistsException()
     {
         // Arrange
         var (dbContext, product, productService) = await CreateTestPreparations();
@@ -290,12 +291,12 @@ public class ProductServiceTests
         };
 
         //Act & Assert
-        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        DomainException.ProductAlreadyExistsException ex = await Assert.ThrowsAsync<DomainException.ProductAlreadyExistsException>(async () =>
         {
             await productService.UpdateProductByIdAsync(product.Id, updateProductRequest);
         });
 
-        Assert.Contains("Sku already exists", ex.Message);
+        Assert.Contains($"Product with SKU '{updateProductRequest.Sku}' already exists", ex.Message);
     }
 
     private async Task<(InventoryDbContext dbContext, Product product, ProductService productService)> CreateTestPreparations()

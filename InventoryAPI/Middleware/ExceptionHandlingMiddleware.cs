@@ -1,3 +1,5 @@
+using InventoryAPI.Exceptions;
+
 namespace InventoryAPI.Middleware
 {
     public class ExceptionHandlingMiddleware
@@ -16,6 +18,33 @@ namespace InventoryAPI.Middleware
             try
             {
                 await _next(context);
+            }
+            catch (DomainException ex) 
+            {
+                context.Response.StatusCode = 400;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    code = ex.Code,
+                    message = ex.Message,
+                    timestamp = DateTime.UtcNow
+                });
+            }
+            catch (ValidationException ex)
+            {
+                context.Response.StatusCode = 400;
+                context.Response.ContentType = "application/json";
+
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    message = "Validation failed",
+                    errors = ex.Errors.Select(e => new
+                    {
+                        code = e.Code,
+                        message = e.Message
+                    }).ToList(),
+                    timestamp = DateTime.UtcNow
+                });
             }
             catch (Exception ex)
             {

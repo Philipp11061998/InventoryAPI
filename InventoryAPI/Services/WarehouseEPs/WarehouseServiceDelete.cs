@@ -1,6 +1,7 @@
 using InventoryAPI.Models;
 using InventoryAPI.DTOs;
 using Microsoft.EntityFrameworkCore;
+using InventoryAPI.Exceptions;
 
 namespace InventoryAPI.Services;
 
@@ -13,7 +14,7 @@ public partial class WarehouseService
 
         if(warehouse == null) return null;
 
-        if(warehouse.IsActive == false) throw new InvalidOperationException("Warehouse already inactive");
+        if(warehouse.IsActive == false) throw new DomainException.WarehouseInactiveException();
 
         warehouse.IsActive = false;
 

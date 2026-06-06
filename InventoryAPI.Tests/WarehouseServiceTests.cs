@@ -1,5 +1,6 @@
 using InventoryAPI.Data;
 using InventoryAPI.DTOs;
+using InventoryAPI.Exceptions;
 using InventoryAPI.Models;
 using InventoryAPI.Services;
 using Microsoft.Data.Sqlite;
@@ -10,7 +11,7 @@ namespace InventoryAPI.Tests;
 public class WarehouseServiceTests
 {
     [Fact]
-    public async Task DeleteWarehouseAsync_WarehouseAlreadyInactive_ThrowsInvalidOperationException()
+    public async Task DeleteWarehouseAsync_WarehouseAlreadyInactive_ThrowsWarehouseInactiveException()
     {
         // Arrange
         var (dbContext, warehouse, warehouseService) = await CreateTestPreparations();
@@ -18,7 +19,7 @@ public class WarehouseServiceTests
         // Act & Assert
         await warehouseService.DeleteWarehouseByIdAsync(warehouse.Id); //Erstes Löschen um auf inaktiv zu setzen (keine eigene Datenbankaktion, sondern nutzen der bestehenden Infrastruktur)
 
-        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        DomainException.WarehouseInactiveException ex = await Assert.ThrowsAsync<DomainException.WarehouseInactiveException>(async () =>
         {
             await warehouseService.DeleteWarehouseByIdAsync(warehouse.Id);
         }); //Zweite Löschung wirft dann die Exception
@@ -128,7 +129,7 @@ public class WarehouseServiceTests
     }
 
     [Fact]
-    public async Task CreateNewWarehouseAsync_NameAlreadyExists_ThrowsInvalidOperationException()
+    public async Task CreateNewWarehouseAsync_NameAlreadyExists_ThrowsWarehouseAlreadyExistsException()
     {
         // Arrange
         var (dbContext, warehouse, warehouseService) = await CreateTestPreparations();
@@ -139,12 +140,12 @@ public class WarehouseServiceTests
         };
 
         // Act & Assert
-        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        DomainException.WarehouseAlreadyExistsException ex = await Assert.ThrowsAsync<DomainException.WarehouseAlreadyExistsException>(async () =>
         {
             await warehouseService.CreateNewWarehouseAsync(newWarehouseRequest);
         });
 
-        Assert.Contains("Warehouse with the same Name already exists", ex.Message);
+        Assert.Contains($"Warehouse with Name '{newWarehouseRequest.Name}' already exists", ex.Message);
 
     }
 
@@ -235,7 +236,7 @@ public class WarehouseServiceTests
     }
 
     [Fact]
-    public async Task UpdateWarehouseByIdAsync_UpdateInactiveWarehouse_ThrowsInvalidOperationException()
+    public async Task UpdateWarehouseByIdAsync_UpdateInactiveWarehouse_ThrowsWarehouseInactiveException()
     {
         // Arrange
         var (dbContext, warehouse, warehouseService) = await CreateTestPreparations();
@@ -247,12 +248,12 @@ public class WarehouseServiceTests
         };
 
         //Act & Assert
-        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        DomainException.WarehouseInactiveException ex = await Assert.ThrowsAsync<DomainException.WarehouseInactiveException>(async () =>
         {
             await warehouseService.UpdateWarehouseByIdAsync(warehouse.Id, updateWarehouseRequest);
         });
 
-        Assert.Contains("Warehouse inactive", ex.Message);
+        Assert.Contains(DomainException.WarehouseInactiveException.ERROR_MESSAGE, ex.Message);
     }
 
     [Fact]
@@ -274,12 +275,12 @@ public class WarehouseServiceTests
         };
 
         //Act & Assert
-        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        DomainException.WarehouseAlreadyExistsException ex = await Assert.ThrowsAsync<DomainException.WarehouseAlreadyExistsException>(async () =>
         {
             await warehouseService.UpdateWarehouseByIdAsync(warehouse.Id, updateWarehouseRequest);
         });
 
-        Assert.Contains("Name already exists", ex.Message);
+        Assert.Contains($"Warehouse with Name '{updateWarehouseRequest.Name}' already exists", ex.Message);
     }
  
     private async Task<(InventoryDbContext dbContext, Warehouse warehouse, WarehouseService warehouseService)> CreateTestPreparations()

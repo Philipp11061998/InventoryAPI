@@ -1,7 +1,6 @@
 using InventoryAPI.Data;
 using InventoryAPI.DTOs;
 using InventoryAPI.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace InventoryAPI.Services;
 

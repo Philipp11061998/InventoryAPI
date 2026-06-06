@@ -46,7 +46,6 @@ public partial class AuthService
 
         var insertedUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == newUser.Username);
 
-        System.Console.WriteLine(JsonSerializer.Serialize(insertedUser));
         return new UserToDisplay(insertedUser);
 
     }

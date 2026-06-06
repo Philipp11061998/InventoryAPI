@@ -1,6 +1,7 @@
 using InventoryAPI.Models;
 using InventoryAPI.DTOs;
 using Microsoft.EntityFrameworkCore;
+using InventoryAPI.Exceptions;
 
 namespace InventoryAPI.Services;
 
@@ -13,7 +14,7 @@ public partial class ProductService
 
         if(product == null) return null;
 
-        if(product.IsActive == false) throw new InvalidOperationException("Product already inactive");
+        if(product.IsActive == false) throw new DomainException.ProductInactiveException();
 
         product.IsActive = false;
 
