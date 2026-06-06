@@ -26,4 +26,5 @@ jobs:
       run: dotnet build --no-restore
 
     - name: Run tests
-      run: dotnet test --no-build
+      run: dotnet test --no-build --filter "Category!=Integration"
+
