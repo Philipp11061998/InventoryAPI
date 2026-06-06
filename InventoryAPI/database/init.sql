@@ -36,6 +36,16 @@ CREATE TABLE dbo.products (
 
 GO
 
+CREATE UNIQUE INDEX products_sku
+ON dbo.products(sku);
+
+GO
+
+CREATE UNIQUE INDEX products_name
+ON dbo.products(name);
+
+GO
+
 CREATE TABLE dbo.warehouses (
     Id INT IDENTITY(1,1) PRIMARY KEY, 
     [Name] NVARCHAR(50) NOT NULL,
@@ -43,6 +53,11 @@ CREATE TABLE dbo.warehouses (
     IsActive BIT NOT NULL DEFAULT 1,
     CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE()
 );
+
+GO
+
+CREATE UNIQUE INDEX warehouses_name
+ON dbo.warehouses([Name]);
 
 GO
 
@@ -67,6 +82,21 @@ CREATE TABLE dbo.movements (
 
 GO
 
+CREATE INDEX movements_product_id 
+ON dbo.movements(ProductId);
+
+GO
+
+CREATE INDEX movements_warehouse_id
+ON dbo.movements(WarehouseId);
+
+GO
+
+CREATE INDEX movements_created_at
+ON dbo.movements(CreatedAt);
+
+GO
+
 CREATE TABLE dbo.users (
     Id INT IDENTITY(1,1) PRIMARY KEY, 
     Username NVARCHAR(50) NOT NULL,
@@ -77,6 +107,12 @@ CREATE TABLE dbo.users (
 );
 
 GO
+
+CREATE UNIQUE INDEX users_username
+ON dbo.users(Username);
+
+GO
+
 
 IF NOT EXISTS (SELECT 1 FROM dbo.users)
     BEGIN
