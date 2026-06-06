@@ -18,6 +18,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Program>>
         }).CreateClient();
     }
 
+    [Trait("Category", "Integration")]      
     [Fact]
     public async Task Login_ValidCredentials_Returns200WithToken()
     {
