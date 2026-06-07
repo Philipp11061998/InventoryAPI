@@ -27,7 +27,7 @@ public partial class AuthController
         }
         catch(DomainException.UserAlreadyExistsException ex)
         {
-            return Unauthorized(ex.Message);
+            return Conflict(ex.Message);
         } 
         catch (Exception ex)
         {

@@ -67,20 +67,24 @@ public class AuthServiceTests
     }
 
     [Fact]
-    public async Task RegisterAsync_AlreadyExistingUser_ReturnsNull()
+    public async Task RegisterAsync_AlreadyExistingUser_Throws()
     {
         // Arrange
         var (dbContext, authService, user, admin) = await CreateTestPreparations();
 
-        // Act
+        // Act && Assert
         var testUser = new Register{
             Username = user.Username,
             Password = "User123!"
         };
-        var result = await authService.RegisterAsync(testUser);
 
-        //Assert
-        Assert.Null(result);
+        DomainException.UserAlreadyExistsException ex = await Assert.ThrowsAsync<DomainException.UserAlreadyExistsException>(async () =>
+        {
+           await authService.RegisterAsync(testUser); 
+        });
+
+        Assert.Contains($"User with Username '{testUser.Username}' already exists", ex.Message);
+
     }
 
     [Fact]
