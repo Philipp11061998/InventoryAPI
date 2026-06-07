@@ -147,7 +147,7 @@ docker-compose down
 ```
 
 ### Abgedeckte Bereiche
-- Lagerverwaltung (Unit)
+- Lagerverwaltung (Unit + Integration)
 - Produktverwaltung (Unit)
 - Bewegungslogik (Unit)
 - Bestandsregeln (Unit)

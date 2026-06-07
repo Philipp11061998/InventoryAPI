@@ -11,6 +11,7 @@ namespace InventoryAPI.Tests;
 public class AuthControllerTests : IClassFixture<WebApplicationFactory<Program>>
 {
     private readonly HttpClient _client;
+    private readonly string _testUsername = $"TestUser_{Guid.NewGuid()}";
 
     public AuthControllerTests(WebApplicationFactory<Program> factory)
     {
@@ -27,7 +28,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Program>>
         // Arrange 
         var registerRequest = new Register
         {
-            Username = "NewUser",
+            Username = _testUsername,
             Password = "NewUser123!"
         };
 
@@ -49,7 +50,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Program>>
 
     [Trait("Category", "Integration")]
     [Fact]
-    public async Task RegisterAsync_UserAlreadyExists_Returns401()
+    public async Task RegisterAsync_UserAlreadyExists_Returns409()
     {
         // Arrange
         var registerRequest = new Register
