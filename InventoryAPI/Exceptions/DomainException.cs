@@ -80,6 +80,14 @@ namespace InventoryAPI.Exceptions
             }
         }
 
+        public class UserAlreadyExistsException : DomainException
+        {
+            public UserAlreadyExistsException(string name)
+                : base("USER_DUPLICATE_USERNAME", $"User with Username '{name}' already exists")
+            {
+            }
+        }
+
         public class InsufficientStockException : DomainException
         {
             public InsufficientStockException(int productId, int warehouseId)

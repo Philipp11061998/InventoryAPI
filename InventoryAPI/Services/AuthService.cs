@@ -31,7 +31,7 @@ public partial class AuthService
     {
         if(await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == register.Username) != null)
         {
-            return null;
+            throw new DomainException.UserAlreadyExistsException(register.Username);
         } 
 
         string passwordHash = GetPasswordHash(register.Password);
@@ -48,7 +48,6 @@ public partial class AuthService
         var insertedUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == newUser.Username);
 
         return insertedUser != null ? new UserToDisplay(insertedUser) : null;
-
     }
 
     public async Task<string> LoginAsync(Login login)

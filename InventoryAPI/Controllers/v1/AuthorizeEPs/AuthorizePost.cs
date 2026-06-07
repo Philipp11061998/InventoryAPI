@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Security.Authentication;
 using InventoryAPI.DTOs;
+using InventoryAPI.Exceptions;
 using InventoryAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,16 +14,25 @@ public partial class AuthController
         [FromBody, Required] Register register
     )
     {   
-        UserToDisplay? result = await _authService.RegisterAsync(register);
+        try
+        {
+            UserToDisplay? result = await _authService.RegisterAsync(register);
             
-        if(result != null) return CreatedAtAction(
-            nameof(UsersController.GetUserById),
-            "Users",
-            new {id = result.Id},
-            result
-        ); 
-        else return BadRequest("Username bereits vorhanden");
-        
+            return CreatedAtAction(
+                nameof(UsersController.GetUserById),
+                "Users",
+                new {id = result.Id},
+                result
+            ); 
+        }
+        catch(DomainException.UserAlreadyExistsException ex)
+        {
+            return Unauthorized(ex.Message);
+        } 
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }        
     }
 
     [HttpPost("login")]
@@ -36,6 +46,10 @@ public partial class AuthController
             return Ok(result); 
         } 
         catch (AuthenticationException ex)
+        {
+            return Unauthorized(ex.Message);
+        }
+        catch (DomainException.UserNotFoundException ex)
         {
             return Unauthorized(ex.Message);
         }
