@@ -29,7 +29,7 @@ Das macht das System transparenter, auditfähiger und näher an echten Business-
 ---
 
 ## 🛠 Tech Stack
-- .NET 8
+- .NET 8 (LTS)
 - ASP.NET Core Web API
 - Entity Framework Core
 - SQL Server (Docker)
