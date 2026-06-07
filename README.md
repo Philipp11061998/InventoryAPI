@@ -21,7 +21,10 @@ Das macht das System transparenter, auditfähiger und näher an echten Business-
 - Tokenbasierte Authentifizierung mit JWT
 - Rollenbasierte Policies (`AdminOnly`, `User`)
 - Swagger UI mit Bearer-Token-Unterstützung
-- Zentrale Exception-Middleware
+- Zentrale Exception-Middleware (mit Custom Exceptions)
+- UnitTests
+- IntegrationTests
+- User-Registrierung & Login
 
 ---
 
@@ -31,8 +34,10 @@ Das macht das System transparenter, auditfähiger und näher an echten Business-
 - Entity Framework Core
 - SQL Server (Docker)
 - Swagger / OpenAPI
-- xUnit + SQLite InMemory für Tests
+- xUnit + SQLite InMemory für Unit Tests
+- xUnit + WebApplicationFactory für Integrationstests
 - C#
+- BCrypt.Net
 
 ---
 
@@ -113,7 +118,8 @@ DTOs schützen interne Strukturen, halten API-Antworten stabil und trennen Daten
 
 ## 🧪 Tests
 - xUnit als Testframework
-- SQLite InMemory für isolierte Tests
+- SQLite InMemory für Unit Tests
+- WebApplicationFactory für Integrationstests
 - Fokus auf Service-Logik
 
 ### Unit Tests
@@ -141,19 +147,20 @@ docker-compose down
 ```
 
 ### Abgedeckte Bereiche
-- Lagerverwaltung
-- Produktverwaltung
-- Bewegungslogik
-- Bestandsregeln
-- Authentifizierung
-- User
+- Lagerverwaltung (Unit)
+- Produktverwaltung (Unit)
+- Bewegungslogik (Unit)
+- Bestandsregeln (Unit)
+- Authentifizierung (Unit + Integration)
+- User (Unit)
 
 ---
 
 ## 🗄 Datenbank
 - SQL Server im Docker-Container
 - Initialisierung über `database/init.sql`
-- ConnectionString konfigurierbar in `appsettings.json`
+- Datenbankindizes auf häufig abgefragte Spalten
+
 
 ---
 
@@ -211,7 +218,7 @@ Dieses Projekt demonstriert praxisrelevantes Backend-Know-how:
 
 ### Nächste Schritte
 - Logging / Observability
-- Integrationstests für Endpunkte
+- Integrationstests für Endpunkte (in Entwicklung) 🔄
 - Transfer-Logik zwischen Lagern
 - Low-Stock Alerts / Monitoring
 
