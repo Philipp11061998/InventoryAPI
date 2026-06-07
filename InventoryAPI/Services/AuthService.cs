@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Authentication;
 using InventoryAPI.DTOs;
 using System.Text.Json;
+using InventoryAPI.Exceptions;
 
 namespace InventoryAPI.Services;
 
@@ -54,7 +55,7 @@ public partial class AuthService
     {
         User? user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == login.Username);
 
-        if(user == null) throw new AuthenticationException("Bitte registriere dich zuerst!");
+        if(user == null) throw new DomainException.UserNotFoundException();
 
         if(ValidatePasswordHash(login.Password, user.PasswordHash))
         {

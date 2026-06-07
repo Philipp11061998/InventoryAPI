@@ -4,6 +4,7 @@ using BCrypt.Net;
 using InventoryAPI.Common;
 using InventoryAPI.Data;
 using InventoryAPI.DTOs;
+using InventoryAPI.Exceptions;
 using InventoryAPI.Models;
 using InventoryAPI.Services;
 using Microsoft.Data.Sqlite;
@@ -127,7 +128,7 @@ public class AuthServiceTests
     }
 
     [Fact]
-    public async Task LoginAsync_NonExistingUser_ThrowsAuthenticationException()
+    public async Task LoginAsync_NonExistingUser_ThrowsUserNotFoundException()
     {
         // Arrange
         var (dbContext, authService, user, admin) = await CreateTestPreparations();
@@ -139,13 +140,13 @@ public class AuthServiceTests
             Password = "IrrelevantesPasswort123!"
         };
 
-        AuthenticationException ex = await Assert.ThrowsAsync<AuthenticationException>(async () =>
+        DomainException.UserNotFoundException ex = await Assert.ThrowsAsync<DomainException.UserNotFoundException>(async () =>
         {
             await authService.LoginAsync(login);
         });
 
 
-        Assert.Contains("Bitte registriere dich zuerst!", ex.Message);
+        Assert.Contains(DomainException.UserNotFoundException.ERROR_MESSAGE, ex.Message);
     }
 
     [Fact]

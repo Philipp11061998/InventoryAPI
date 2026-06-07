@@ -31,6 +31,17 @@ namespace InventoryAPI.Exceptions
             }
         }
 
+        public class UserNotFoundException : DomainException
+        {
+            public const string ERROR_CODE = "USER_NOT_FOUND";
+            public const string ERROR_MESSAGE = "User not found";
+
+            public UserNotFoundException()
+                : base(ERROR_CODE, ERROR_MESSAGE)
+            {
+            }
+        }
+
         public class ProductInactiveException : DomainException
         {
             public const string ERROR_CODE = "PRODUCT_INACTIVE";
